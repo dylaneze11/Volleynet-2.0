@@ -25,17 +25,25 @@ final _mockUser = UserModel(
   height: 185,
   handedness: 'Diestro',
   category: 'Mayores',
+  age: 24,
+  gender: 'Hombre',
+  pronoun: 'Él/Lo',
+  league: 'Metropolitana',
+  division: 'División de Honor',
+  pastClubs: 'Boca Juniors (2020-2022)\nRiver Plate (2018-2020)',
   followersCount: 1240,
   followingCount: 156,
   bio: 'Apasionado por el vóley. Siempre buscando el siguiente remate. 🔥',
   createdAt: DateTime.now(),
 );
 
+final mockUserProvider = StateProvider<UserModel>((ref) => _mockUser);
+
 // ─── Current User Profile ─────────────────────────────────────────────────────
 
 final currentUserProvider = StreamProvider.autoDispose<UserModel?>((ref) {
   // PREVIEW MODO: Ignorar auth y devolver usuario de prueba
-  return Stream.value(_mockUser);
+  return Stream.value(ref.watch(mockUserProvider));
 });
 
 // ─── Feed Posts ───────────────────────────────────────────────────────────────
@@ -62,7 +70,7 @@ final userPostsProvider = StreamProvider.autoDispose.family<List<PostModel>, Str
 // ─── User Profile ─────────────────────────────────────────────────────────────
 
 final userProfileProvider = FutureProvider.autoDispose.family<UserModel?, String>((ref, uid) async {
-  return _mockUser;
+  return ref.watch(mockUserProvider);
 });
 
 // ─── Conversations ────────────────────────────────────────────────────────────

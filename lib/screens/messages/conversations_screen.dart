@@ -19,7 +19,7 @@ class ConversationsScreen extends ConsumerWidget {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => context.go('/profile'),
+          onPressed: () => context.pop(),
         ),
         title: const Text('Mensajes'),
       ),

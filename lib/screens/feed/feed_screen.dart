@@ -59,11 +59,12 @@ class FeedScreen extends ConsumerWidget {
             children: const [
               TextSpan(text: 'Volley', style: TextStyle(color: AppColors.primary)),
               TextSpan(text: 'Net'),
+              TextSpan(text: ' 🏐'),
             ],
           ),
         ),
         IconButton(
-          onPressed: () => context.go('/messages'),
+          onPressed: () => context.push('/messages'),
           icon: const Icon(Icons.send_rounded),
           style: IconButton.styleFrom(
             backgroundColor: AppColors.surfaceVariant,

@@ -1,5 +1,6 @@
 // Data Models for VolleyNet
 
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ─── User Model ───────────────────────────────────────────────────────────────
@@ -13,6 +14,7 @@ class UserModel {
   final String displayName;
   final String email;
   final String? photoUrl;
+  final Uint8List? localPhotoBytes;
   final String? bio;
   final UserRole role;
   final int followersCount;
@@ -26,6 +28,12 @@ class UserModel {
   final String? handedness;   // 'Diestro' | 'Zurdo'
   final String? category;     // 'Mini' | 'Infantil' | 'Cadete' | 'Junior' | 'Mayor'
   final String? nationality;
+  final String? pronoun;
+  final String? gender;
+  final int? age;
+  final String? pastClubs;
+  final String? division;
+  final String? league;
 
   // Coach-specific
   final String? certificationLevel;
@@ -46,6 +54,7 @@ class UserModel {
     required this.displayName,
     required this.email,
     this.photoUrl,
+    this.localPhotoBytes,
     this.bio,
     required this.role,
     this.followersCount = 0,
@@ -57,6 +66,12 @@ class UserModel {
     this.handedness,
     this.category,
     this.nationality,
+    this.pronoun,
+    this.gender,
+    this.age,
+    this.pastClubs,
+    this.division,
+    this.league,
     this.certificationLevel,
     this.yearsExperience,
     this.coachedCategories,
@@ -106,6 +121,12 @@ class UserModel {
       handedness: data['handedness'],
       category: data['category'],
       nationality: data['nationality'],
+      pronoun: data['pronoun'],
+      gender: data['gender'],
+      age: data['age'],
+      pastClubs: data['pastClubs'],
+      division: data['division'],
+      league: data['league'],
       certificationLevel: data['certificationLevel'],
       yearsExperience: data['yearsExperience'],
       coachedCategories: data['coachedCategories'] != null
@@ -138,6 +159,12 @@ class UserModel {
       'handedness': handedness,
       'category': category,
       'nationality': nationality,
+      'pronoun': pronoun,
+      'gender': gender,
+      'age': age,
+      'pastClubs': pastClubs,
+      'division': division,
+      'league': league,
       'certificationLevel': certificationLevel,
       'yearsExperience': yearsExperience,
       'coachedCategories': coachedCategories,
@@ -153,28 +180,45 @@ class UserModel {
   UserModel copyWith({
     String? displayName,
     String? photoUrl,
+    Uint8List? localPhotoBytes,
     String? bio,
     int? followersCount,
     int? followingCount,
     List<String>? followers,
     List<String>? following,
+    String? pronoun,
+    String? gender,
+    int? age,
+    String? pastClubs,
+    String? division,
+    String? league,
+    PlayerPosition? position,
+    double? height,
+    String? category,
   }) {
     return UserModel(
       uid: uid,
       displayName: displayName ?? this.displayName,
       email: email,
       photoUrl: photoUrl ?? this.photoUrl,
+      localPhotoBytes: localPhotoBytes ?? this.localPhotoBytes,
       bio: bio ?? this.bio,
       role: role,
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       followers: followers ?? this.followers,
       following: following ?? this.following,
-      position: position,
-      height: height,
+      position: position ?? this.position,
+      height: height ?? this.height,
       handedness: handedness,
-      category: category,
+      category: category ?? this.category,
       nationality: nationality,
+      pronoun: pronoun ?? this.pronoun,
+      gender: gender ?? this.gender,
+      age: age ?? this.age,
+      pastClubs: pastClubs ?? this.pastClubs,
+      division: division ?? this.division,
+      league: league ?? this.league,
       certificationLevel: certificationLevel,
       yearsExperience: yearsExperience,
       coachedCategories: coachedCategories,

@@ -63,12 +63,16 @@ class ProfileScreen extends ConsumerWidget {
                       color: AppColors.surfaceVariant,
                     ),
                     child: ClipOval(
-                      child: user.photoUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: user.photoUrl!,
-                              fit: BoxFit.cover,
-                            )
-                          : const Icon(Icons.person, size: 60, color: AppColors.secondary),
+                      child: user.localPhotoBytes != null
+                          ? Image.memory(user.localPhotoBytes!, fit: BoxFit.cover, width: 120, height: 120)
+                          : (user.photoUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: user.photoUrl!,
+                                  fit: BoxFit.cover,
+                                  width: 120,
+                                  height: 120,
+                                )
+                              : const Icon(Icons.person, size: 60, color: AppColors.secondary)),
                     ),
                   ),
                 ),
@@ -77,16 +81,67 @@ class ProfileScreen extends ConsumerWidget {
                 // Name & Info
                 Text(
                   user.displayName,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${user.positionLabel.isNotEmpty ? user.positionLabel : "Jugador"} · ${user.category ?? "Libre"}',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.secondary,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (user.pronoun != null && user.pronoun!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    user.pronoun!,
+                    style: const TextStyle(color: AppColors.secondary, fontStyle: FontStyle.italic),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                
+                // Position & Category Chip
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${user.positionLabel.isNotEmpty ? user.positionLabel : "Jugador"} · ${user.category ?? "Libre"}',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
+                // Stats
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _StatColumn(
+                      label: 'Publicaciones', 
+                      count: postsAsync.value?.length.toString() ?? '-',
+                    ),
+                    const SizedBox(width: 24),
+                    _StatColumn(
+                      label: 'Seguidores', 
+                      count: user.followersCount.toString(),
+                    ),
+                    const SizedBox(width: 24),
+                    _StatColumn(
+                      label: 'Seguidos', 
+                      count: user.followingCount.toString(),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
+                
+                // Bio
+                if (user.bio != null && user.bio!.isNotEmpty) ...[
+                  Text(
+                    user.bio!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 
                 // Status Chip (Busco Club)
                 Container(
@@ -111,7 +166,7 @@ class ProfileScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => context.push('/edit-profile'),
                       child: const Text('Editar perfil'),
                     ),
                   )
@@ -155,6 +210,61 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                ),
+                
+                const SizedBox(height: 32),
+
+                // Ficha Deportiva (Bento Info)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Ficha Deportiva',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceVariant.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.surfaceVariant),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: _InfoItem(label: 'Edad', value: user.age != null ? '${user.age} años' : '-')),
+                          Expanded(child: _InfoItem(label: 'Altura', value: user.height != null ? '${user.height} cm' : '-')),
+                          Expanded(child: _InfoItem(label: 'Género', value: user.gender ?? '-')),
+                        ],
+                      ),
+                      const Divider(height: 32),
+                      Row(
+                        children: [
+                          Expanded(child: _InfoItem(label: 'División', value: user.division ?? '-')),
+                          Expanded(child: _InfoItem(label: 'Liga', value: user.league ?? '-')),
+                        ],
+                      ),
+                      if (user.pastClubs != null && user.pastClubs!.isNotEmpty) ...[
+                        const Divider(height: 32),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Historial de Clubes', style: TextStyle(color: AppColors.secondary, fontSize: 13)),
+                              const SizedBox(height: 8),
+                              Text(
+                                user.pastClubs!,
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
                 
                 const SizedBox(height: 32),
@@ -228,6 +338,25 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
+class _InfoItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: AppColors.secondary, fontSize: 13)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      ],
+    );
+  }
+}
+
 class _ActionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -263,6 +392,30 @@ class _ActionCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StatColumn extends StatelessWidget {
+  final String label;
+  final String count;
+
+  const _StatColumn({required this.label, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.secondary, fontSize: 14),
+        ),
+      ],
     );
   }
 }
