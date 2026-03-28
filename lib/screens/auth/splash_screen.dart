@@ -5,28 +5,37 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../providers/providers.dart';
 import '../../core/theme/app_theme.dart';
 
-class SplashScreen extends ConsumerWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(authStateProvider, (_, next) {
-      next.whenData((user) {
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (context.mounted) {
-            if (user != null) {
-              context.go('/home');
-            } else {
-              context.go('/auth/login');
-            }
-          }
-        });
-      });
-    });
+  State<SplashScreen> createState() => _SplashScreenState();
+}
 
+class _SplashScreenState extends State<SplashScreen> {
+  bool _navigated = false;
+
+  void _navigateToHome() {
+    if (mounted && !_navigated) {
+      _navigated = true;
+      context.go('/home');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 2500), _navigateToHome);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Center(
+      body: GestureDetector(
+        onTap: _navigateToHome,
+        behavior: HitTestBehavior.opaque,
+        child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -79,6 +88,7 @@ class SplashScreen extends ConsumerWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

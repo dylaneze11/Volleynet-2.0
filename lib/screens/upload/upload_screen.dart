@@ -17,14 +17,15 @@ class UploadScreen extends ConsumerStatefulWidget {
 class _UploadScreenState extends ConsumerState<UploadScreen> {
   Uint8List? _imageBytes;
   final _captionCtrl = TextEditingController();
-  final Set<PostTag> _selectedTags = {PostTag.soloContenido};
+  final Set<String> _selectedHashtags = {};
   bool _loading = false;
 
-  static const _tagOptions = [
-    (PostTag.soloContenido, 'Solo Contenido', 'Highlights o fotos normales', Icons.camera_alt, AppColors.tagSoloContenido),
-    (PostTag.buscoClub, 'Busco Club', 'Jugadores/entrenadores\nbuscando club', Icons.sports_volleyball, AppColors.tagBuscoClub),
-    (PostTag.buscoJugador, 'Busco Jugador', 'Clubes armando equipo', Icons.person, AppColors.tagBuscoJugador),
-    (PostTag.buscoEntrenador, 'Busco Entrenador', 'Clubes buscando DT', Icons.assignment, AppColors.tagBuscoEntrenador),
+  static const _hashtags = [
+    '#LigaRegional',
+    '#Remate',
+    '#Entrenamiento',
+    '#VoleyFemenino',
+    '#VoleyMasculino'
   ];
 
   Future<void> _pickImage() async {
@@ -39,7 +40,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
   Future<void> _publish() async {
     if (_imageBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seleccioná una imagen o video primero')));
+        const SnackBar(content: Text('Por favor, selecciona una foto o video.')));
       return;
     }
     setState(() => _loading = true);
@@ -56,8 +57,8 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
         authorRole: user.roleLabel,
         mediaUrl: mediaUrl,
         mediaType: 'photo',
-        caption: _captionCtrl.text.trim().isNotEmpty ? _captionCtrl.text.trim() : null,
-        tags: _selectedTags.toList(),
+        caption: '${_captionCtrl.text.trim()} ${_selectedHashtags.join(" ")}'.trim(),
+        tags: [PostTag.soloContenido],
         createdAt: DateTime.now(),
       );
       await postRepo.createPost(post);
@@ -78,149 +79,133 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = (screenWidth - 40 - 10) / 2; // paddings and spacing
-    
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.primaryContainer.withOpacity(0.1), // Fondo naranja claro
       appBar: AppBar(
-        title: const Text('Nueva Publicación', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+        backgroundColor: Colors.transparent,
+        title: const Text('Crear Publicación'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.close),
           onPressed: () => context.go('/home'),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 14, top: 10, bottom: 10),
-            child: ElevatedButton(
-              onPressed: _loading ? null : _publish,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary.withOpacity(0.25),
-                foregroundColor: AppColors.primary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-              child: _loading
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2))
-                  : const Text('Publicar', style: TextStyle(fontWeight: FontWeight.w700)),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image picker area
+            // Área punteada para subir archivo
             GestureDetector(
               onTap: _pickImage,
               child: Container(
-                width: double.infinity,
-                height: 240,
+                height: 250,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF141A29), // Deep dark blue background matching image
-                  borderRadius: BorderRadius.circular(16),
-                  // Emulating dashed border via a standard slightly visible border
-                  border: Border.all(color: AppColors.divider.withOpacity(0.3), width: 1.5),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.5),
+                    width: 2,
+                    // Idealmente un borde punteado, pero usamos Border normal en default
+                  ),
                 ),
                 child: _imageBytes != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(22),
                         child: Image.memory(_imageBytes!, fit: BoxFit.cover),
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.add_photo_alternate_outlined, color: AppColors.textHint, size: 52),
-                          const SizedBox(height: 12),
-                          const Text('Toca para subir foto o video',
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                          Icon(
+                            Icons.cloud_upload_outlined,
+                            size: 64,
+                            color: AppColors.primary.withOpacity(0.8),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Toca para subir',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'PNG, JPG o MP4 (Max. 10MB)',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.secondary,
+                                ),
+                          ),
                         ],
                       ),
               ),
             ),
-            const SizedBox(height: 20),
-
-            // Caption
+            const SizedBox(height: 32),
+            
+            // Input de texto grande
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF10131E),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.divider.withOpacity(0.3), width: 1),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  )
+                ],
               ),
               child: TextField(
                 controller: _captionCtrl,
                 maxLines: 4,
-                maxLength: 300,
-                style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
                 decoration: const InputDecoration(
-                  hintText: 'Escribe una descripción...',
-                  hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
-                  counterText: "",
+                  hintText: '¿Qué quieres compartir hoy?',
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  fillColor: Colors.transparent,
+                  contentPadding: EdgeInsets.all(24),
                 ),
               ),
             ),
-            const SizedBox(height: 28),
-
-            // Tags
-            const Text('ETIQUETA DE ESTADO *', style: TextStyle(
-              color: AppColors.textSecondary, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
+            
+            // Hashtags Chips
             Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: _tagOptions.map((tagOption) {
-                final isSelected = _selectedTags.contains(tagOption.$1);
-                return GestureDetector(
-                  onTap: () {
+              spacing: 12,
+              runSpacing: 12,
+              children: _hashtags.map((tag) {
+                final isSelected = _selectedHashtags.contains(tag);
+                return FilterChip(
+                  label: Text(tag),
+                  selected: isSelected,
+                  onSelected: (selected) {
                     setState(() {
-                      if (isSelected) {
-                        if (_selectedTags.length > 1) _selectedTags.remove(tagOption.$1);
+                      if (selected) {
+                        _selectedHashtags.add(tag);
                       } else {
-                        _selectedTags.clear();
-                        _selectedTags.add(tagOption.$1);
+                        _selectedHashtags.remove(tag);
                       }
                     });
                   },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: cardWidth,
-                    height: 80,
-                    padding: const EdgeInsets.only(left: 12, top: 12, right: 8, bottom: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF1A1C28) : const Color(0xFF141624),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? tagOption.$5 : AppColors.divider.withOpacity(0.1),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(tagOption.$4, size: 16, color: tagOption.$5), // Actually, wait, does tagOption.$5 exist? It's the 5th element! Yes.
-                            const SizedBox(width: 6),
-                            Expanded(child: Text(tagOption.$2, style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13), overflow: TextOverflow.ellipsis)),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(tagOption.$3, style: TextStyle(
-                          color: AppColors.textSecondary.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.w500, height: 1.1),
-                          maxLines: 2, overflow: TextOverflow.ellipsis),
-                      ],
-                    ),
-                  ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 32),
+            
+            const SizedBox(height: 48),
+            
+            // Botón primario Publicar
+            ElevatedButton(
+              onPressed: _loading ? null : _publish,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: _loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Publicar Ahora', style: TextStyle(fontSize: 18)),
+            ),
           ],
         ),
       ),

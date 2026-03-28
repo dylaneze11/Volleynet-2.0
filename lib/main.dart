@@ -51,8 +51,30 @@ class VolleyNetApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'VolleyNet',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
+      theme: AppTheme.lightTheme,
       routerConfig: router,
+      builder: (context, child) {
+        return Container(
+          color: const Color(0xFFE5E7EB), // Gray background outside the app bounds
+          alignment: Alignment.center,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Container(
+              decoration: const BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 30,
+                    offset: Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: child,
+            ),
+          ),
+        );
+      },
     );
   }
 }

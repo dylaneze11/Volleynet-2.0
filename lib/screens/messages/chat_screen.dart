@@ -48,7 +48,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final currentUser = ref.watch(currentUserProvider).valueOrNull;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
@@ -63,7 +63,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: Text(
                   widget.otherUser!.displayName.isNotEmpty
                       ? widget.otherUser!.displayName[0].toUpperCase() : '?',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(width: 10),
@@ -77,7 +77,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         children: [
           Expanded(
             child: messages.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (msgs) {
                 if (msgs.isEmpty) {
@@ -85,9 +85,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.send_outlined, size: 48, color: AppColors.textHint),
+                        const Icon(Icons.send_outlined, size: 48, color: AppColors.secondary),
                         const SizedBox(height: 12),
-                        Text('Comenzá la conversación',
+                        Text('Comienza la conversación',
                             style: Theme.of(context).textTheme.bodyMedium),
                       ],
                     ),
@@ -111,7 +111,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: const BoxDecoration(
               color: AppColors.surface,
-              border: Border(top: BorderSide(color: AppColors.divider)),
+              border: Border(top: BorderSide(color: AppColors.surfaceVariant)),
             ),
             child: SafeArea(
               child: Row(
@@ -119,10 +119,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   Expanded(
                     child: TextField(
                       controller: _msgCtrl,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                      style: const TextStyle(color: Colors.black, fontSize: 15),
                       decoration: const InputDecoration(
-                        hintText: 'Enviá un mensaje...',
+                        hintText: 'Envía un mensaje...',
                         contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        border: InputBorder.none,
                       ),
                       onSubmitted: (_) => _sendMessage(),
                     ),
@@ -133,9 +134,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: Container(
                       width: 44, height: 44,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]),
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(12),
-                        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
+                        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))],
                       ),
                       child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
                     ),
@@ -167,8 +168,7 @@ class _MessageBubble extends StatelessWidget {
             constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              gradient: isMe ? const LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]) : null,
-              color: isMe ? null : AppColors.surfaceVariant,
+              color: isMe ? AppColors.primary : AppColors.surfaceVariant,
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(18),
                 topRight: const Radius.circular(18),
@@ -180,11 +180,11 @@ class _MessageBubble extends StatelessWidget {
               crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Text(message.text,
-                    style: TextStyle(color: isMe ? Colors.white : AppColors.textPrimary, fontSize: 15)),
+                    style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 15)),
                 const SizedBox(height: 3),
                 Text(timeago.format(message.createdAt, locale: 'es'),
                     style: TextStyle(
-                      color: isMe ? Colors.white60 : AppColors.textHint,
+                      color: isMe ? Colors.white70 : AppColors.secondary,
                       fontSize: 10,
                     )),
               ],

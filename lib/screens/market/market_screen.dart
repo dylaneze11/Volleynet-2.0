@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import '../../core/theme/app_theme.dart';
 import '../../models/models.dart';
 import '../../providers/providers.dart';
-import '../feed/feed_screen.dart';
 
 class MarketScreen extends ConsumerStatefulWidget {
   const MarketScreen({super.key});
@@ -15,350 +12,347 @@ class MarketScreen extends ConsumerStatefulWidget {
 }
 
 class _MarketScreenState extends ConsumerState<MarketScreen> {
-  final Set<String> _selectedTags = {};
-  String _selectedPosition = 'Todas las posiciones';
-  String _selectedCategory = 'Todas las categorías';
+  String _selectedFilter = 'Todos';
+  final _searchController = TextEditingController();
 
-  static const _filterTags = [
-    ('BuscoClub', '🏐 Busco Club', AppColors.tagBuscoClub),
-    ('BuscoJugador', '👤 Busco Jugador', AppColors.tagBuscoJugador),
-  ];
-
-  static const _positions = ['Todas las posiciones', 'Armador', 'Opuesto', 'Punta Receptor', 'Central', 'Líbero'];
-  static const _categories = ['Todas las categorías', 'División de Honor', 'Primera', 'Segunda', 'Tercera', 'Cuarta', 'Quinta', 'Sexta', 'Séptima'];
+  static const _filters = ['Todos', 'Agentes Libres', 'Nacional', 'Internacional', 'Juveniles'];
 
   @override
   Widget build(BuildContext context) {
     final posts = ref.watch(marketPostsProvider);
-    final currentUser = ref.watch(currentUserProvider).valueOrNull;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Row(
+      backgroundColor: AppColors.surface,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.trending_up, color: AppColors.primary, size: 28),
-            const SizedBox(width: 10),
-            const Text('Mercado de Fichajes', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22)),
+            // Custom Header
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 24, bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'TEMPORADA 2024/25',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Mercado de Pases',
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                ],
+              ),
+            ),
+            
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Buscar jugador o club...',
+                  prefixIcon: const Icon(Icons.search, color: AppColors.secondary),
+                  fillColor: AppColors.surfaceVariant.withOpacity(0.5),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(100), // Pill shape
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(100),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(100),
+                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Filter Chips
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: _filters.map((filter) {
+                  final isSelected = _selectedFilter == filter;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: ChoiceChip(
+                      label: Text(filter),
+                      selected: isSelected,
+                      showCheckmark: false,
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedFilter = filter);
+                      },
+                      backgroundColor: AppColors.surfaceVariant.withOpacity(0.5),
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : AppColors.secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      side: BorderSide.none,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Main Content ListView
+            Expanded(
+              child: posts.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text('Error: $e')),
+                data: (data) {
+                  return ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    children: [
+                      // Section Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Agentes Libres\nDestacados',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                height: 1.2,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {},
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Ver\ntodos',
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(Icons.chevron_right, color: AppColors.primary, size: 18),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // High Fidelity Player Cards
+                      const _PlayerCardMock(
+                        name: "MARCOS 'EL\nMURO' RUIZ",
+                        position: "Central",
+                        ageAndHeight: "2.10m | 31 años",
+                        reach: "3.65m",
+                        imgUrl: "https://images.unsplash.com/photo-1593341398860-264627b1406c?q=80&w=600",
+                        status: "MÁS BUSCADO",
+                      ),
+                      const _PlayerCardMock(
+                        name: "LUCÍA\nFERNANDEZ",
+                        position: "Opuesta",
+                        ageAndHeight: "1.88m | 24 años",
+                        reach: "3.10m",
+                        imgUrl: "https://images.unsplash.com/photo-1574629810360-7efbc5ea002c?q=80&w=600",
+                        status: "MÁS BUSCADA",
+                      ),
+                      const SizedBox(height: 40), // Bottom padding for nav bar
+                    ],
+                  );
+                },
+              ),
+            ),
           ],
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(110),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      ),
+    );
+  }
+}
+
+class _PlayerCardMock extends StatelessWidget {
+  final String name;
+  final String position;
+  final String ageAndHeight;
+  final String reach;
+  final String status;
+  final String imgUrl;
+
+  const _PlayerCardMock({
+    required this.name,
+    required this.position,
+    required this.ageAndHeight,
+    required this.reach,
+    required this.imgUrl,
+    required this.status,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      height: 400,
+      decoration: BoxDecoration(
+        color: const Color(0xFF121212), // Dark card background
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background Image with dark gradient overlay
+          Image.network(
+            imgUrl,
+            fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
+            errorBuilder: (_, __, ___) => Container(color: Colors.grey[800]),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.6),
+                  const Color(0xFF1A1A1A), // Dark solid at bottom
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: const [0.3, 0.6, 0.9],
+              ),
+            ),
+          ),
+          
+          // Content Overlay
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Tags Row
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+                // Top Right Reach metric (Simulating float)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Column(
                     children: [
-                      _FilterChip(
-                        label: 'Todos',
-                        isSelected: _selectedTags.isEmpty,
-                        color: AppColors.primary,
-                        onTap: () {
-                          setState(() {
-                            _selectedTags.clear();
-                            ref.read(marketFilterProvider.notifier).state = [];
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      ..._filterTags.map((tag) => Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: _FilterChip(
-                          label: tag.$2,
-                          isSelected: _selectedTags.contains(tag.$1),
-                          color: tag.$3,
-                          onTap: () {
-                            setState(() {
-                              if (_selectedTags.contains(tag.$1)) {
-                                _selectedTags.remove(tag.$1);
-                              } else {
-                                _selectedTags.add(tag.$1);
-                              }
-                              ref.read(marketFilterProvider.notifier).state = _selectedTags.toList();
-                            });
-                          },
+                      const Text(
+                        'ALCANCE',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
                         ),
-                      )),
+                      ),
+                      Text(
+                        reach,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                // Dropdowns Row
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _DropdownFilter(
-                        value: _selectedPosition,
-                        items: _positions,
-                        onChanged: (val) => setState(() => _selectedPosition = val!),
-                      ),
-                      const SizedBox(width: 8),
-                      _DropdownFilter(
-                        value: _selectedCategory,
-                        items: _categories,
-                        onChanged: (val) => setState(() => _selectedCategory = val!),
-                      ),
-                    ],
+                
+                const Spacer(),
+                
+                // Content
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    status,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: posts.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: AppColors.error))),
-        data: (posts) {
-          if (posts.isEmpty) {
-            return _buildEmpty(context);
-          }
-          return RefreshIndicator(
-            color: AppColors.primary,
-            onRefresh: () async => ref.invalidate(marketPostsProvider),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: posts.length,
-              itemBuilder: (ctx, i) => _MarketCard(
-                post: posts[i],
-                currentUid: currentUser?.uid ?? '',
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmpty(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                color: const Color(0xFF231A17),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.trending_up, size: 48, color: AppColors.primary),
-            ),
-            const SizedBox(height: 24),
-            Text('Sin resultados', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 22)),
-            const SizedBox(height: 12),
-            Text('No hay publicaciones con estos filtros. Intenta\ncambiar los filtros.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary, fontSize: 15),
-                textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DropdownFilter extends StatelessWidget {
-  final String value;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
-
-  const _DropdownFilter({required this.value, required this.items, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider, width: 1.5),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary, size: 20),
-          dropdownColor: AppColors.surfaceVariant,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500, fontFamily: 'Inter'),
-          onChanged: onChanged,
-          items: items.map<DropdownMenuItem<String>>((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(item),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _FilterChip({required this.label, required this.isSelected, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.2) : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? color : AppColors.divider, width: 1.5),
-        ),
-        child: Text(label,
-          style: TextStyle(
-            color: isSelected ? color : AppColors.textSecondary,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MarketCard extends ConsumerWidget {
-  final PostModel post;
-  final String currentUid;
-
-  const _MarketCard({required this.post, required this.currentUid});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    Color tagColor;
-    final tag = post.tags.isNotEmpty ? post.tags.first : PostTag.soloContenido;
-    switch (tag) {
-      case PostTag.buscoClub: tagColor = AppColors.tagBuscoClub; break;
-      case PostTag.buscoJugador: tagColor = AppColors.tagBuscoJugador; break;
-      case PostTag.buscoEntrenador: tagColor = AppColors.tagBuscoEntrenador; break;
-      default: tagColor = AppColors.tagSoloContenido;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: tagColor.withOpacity(0.2), width: 1),
-      ),
-      child: Column(
-        children: [
-          // Tag header bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: tagColor.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 8, height: 8,
-                  decoration: BoxDecoration(color: tagColor, shape: BoxShape.circle),
-                ),
-                const SizedBox(width: 8),
-                Text(tag.displayLabel,
-                    style: TextStyle(color: tagColor, fontWeight: FontWeight.w700, fontSize: 12)),
-                const Spacer(),
-                Text(timeago.format(post.createdAt, locale: 'es'),
-                    style: const TextStyle(color: AppColors.textHint, fontSize: 11)),
-              ],
-            ),
-          ),
-          // Body
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Media preview
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: post.mediaUrl,
-                    width: 85,
-                    height: 85,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(
-                      width: 85, height: 85,
-                      color: AppColors.surfaceVariant,
-                      child: const Icon(Icons.sports_volleyball, color: AppColors.textHint, size: 32),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      width: 85, height: 85,
-                      color: AppColors.surfaceVariant,
-                      child: const Icon(Icons.sports_volleyball, color: AppColors.textHint, size: 32),
-                    ),
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    height: 1.1,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(post.authorName,
-                          style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary, fontSize: 15)),
-                      if (post.authorRole != null)
-                        Text(post.authorRole!, style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
-                      const SizedBox(height: 6),
-                      if (post.caption != null && post.caption!.isNotEmpty)
-                        Text(post.caption!,
-                            maxLines: 2, overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          const Icon(Icons.sports_volleyball, color: AppColors.primary, size: 14),
-                          const SizedBox(width: 4),
-                          Text('${post.likeCount}', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
-                          const SizedBox(width: 12),
-                          const Icon(Icons.chat_bubble_outline, color: AppColors.textHint, size: 14),
-                          const SizedBox(width: 4),
-                          Text('${post.commentCount}', style: const TextStyle(color: AppColors.textHint, fontSize: 12)),
-                        ],
+                const SizedBox(height: 6),
+                Text(
+                  '$position | $ageAndHeight',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text('Negociar', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.15),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text('Ver Stats', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-          // Contact button
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-            child: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                icon: const Icon(Icons.send_outlined, size: 16),
-                label: const Text('Contactar'),
-                onPressed: () {
-                  // Navigate to chat with this user
-                  // Full implementation requires fetching user profile first
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: tagColor,
-                  side: BorderSide(color: tagColor.withOpacity(0.5)),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-              ),
             ),
           ),
         ],

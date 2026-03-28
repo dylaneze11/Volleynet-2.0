@@ -37,53 +37,70 @@ class _AppShellState extends ConsumerState<AppShell> {
     final idx = _indexFromLocation(location);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       body: widget.child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: const Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
             ),
           ],
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _NavItem(icon: Icons.home_outlined, label: 'Inicio',
+                _NavItem(icon: Icons.home_filled, label: 'INICIO',
                     isActive: idx == 0, onTap: () => _onTap(0)),
-                _NavItem(icon: Icons.search, label: 'Mercado',
+                _NavItem(icon: Icons.shopping_bag_outlined, label: 'MERCADO',
                     isActive: idx == 1, onTap: () => _onTap(1)),
                 // Central publish button
                 GestureDetector(
                   onTap: () => _onTap(2),
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 5),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'CREAR',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.secondary.withOpacity(0.5),
+                          ),
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 32),
                   ),
                 ),
-                _NavItem(icon: Icons.notifications_none_outlined, label: 'Alertas',
+                _NavItem(icon: Icons.notifications_none_rounded, label: 'ALERTAS',
                     isActive: idx == 3, onTap: () => _onTap(3)),
-                _NavItem(icon: Icons.person_outline, label: 'Perfil',
+                _NavItem(icon: Icons.person_outline_rounded, label: 'PERFIL',
                     isActive: idx == 4, onTap: () => _onTap(4)),
               ],
             ),
@@ -112,26 +129,29 @@ class _NavItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? AppColors.primary : AppColors.textHint,
-              size: 26,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: isActive ? AppColors.primary : AppColors.textHint,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isActive ? AppColors.primary : AppColors.secondary.withOpacity(0.5),
+                size: 26,
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: isActive ? AppColors.primary : AppColors.secondary.withOpacity(0.5),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
