@@ -21,10 +21,10 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
   bool _loading = false;
 
   static const _tagOptions = [
-    (PostTag.soloContenido, '📱 Solo Contenido', AppColors.tagSoloContenido),
-    (PostTag.buscoClub, '🏐 Busco Club', AppColors.tagBuscoClub),
-    (PostTag.buscoJugador, '👤 Busco Jugador', AppColors.tagBuscoJugador),
-    (PostTag.buscoEntrenador, '📋 Busco Entrenador', AppColors.tagBuscoEntrenador),
+    (PostTag.soloContenido, 'Solo Contenido', 'Highlights o fotos normales', Icons.camera_alt, AppColors.tagSoloContenido),
+    (PostTag.buscoClub, 'Busco Club', 'Jugadores/entrenadores\nbuscando club', Icons.sports_volleyball, AppColors.tagBuscoClub),
+    (PostTag.buscoJugador, 'Busco Jugador', 'Clubes armando equipo', Icons.person, AppColors.tagBuscoJugador),
+    (PostTag.buscoEntrenador, 'Busco Entrenador', 'Clubes buscando DT', Icons.assignment, AppColors.tagBuscoEntrenador),
   ];
 
   Future<void> _pickImage() async {
@@ -78,24 +78,32 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = (screenWidth - 40 - 10) / 2; // paddings and spacing
+    
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Nueva publicación'),
+        title: const Text('Nueva Publicación', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/home'),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: TextButton(
+            padding: const EdgeInsets.only(right: 14, top: 10, bottom: 10),
+            child: ElevatedButton(
               onPressed: _loading ? null : _publish,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary.withOpacity(0.25),
+                foregroundColor: AppColors.primary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
               child: _loading
-                  ? const SizedBox(width: 18, height: 18,
-                      child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2))
-                  : const Text('Publicar',
-                      style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 16)),
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2))
+                  : const Text('Publicar', style: TextStyle(fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -110,14 +118,12 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
               onTap: _pickImage,
               child: Container(
                 width: double.infinity,
-                height: 280,
+                height: 240,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: const Color(0xFF141A29), // Deep dark blue background matching image
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _imageBytes != null ? AppColors.primary : AppColors.divider,
-                    width: _imageBytes != null ? 2 : 1,
-                  ),
+                  // Emulating dashed border via a standard slightly visible border
+                  border: Border.all(color: AppColors.divider.withOpacity(0.3), width: 1.5),
                 ),
                 child: _imageBytes != null
                     ? ClipRRect(
@@ -127,21 +133,10 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 64, height: 64,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.add_photo_alternate_outlined,
-                                color: AppColors.primary, size: 32),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text('Toca para seleccionar foto',
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 15)),
-                          const SizedBox(height: 6),
-                          const Text('JPG, PNG, MP4',
-                              style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                          const Icon(Icons.add_photo_alternate_outlined, color: AppColors.textHint, size: 52),
+                          const SizedBox(height: 12),
+                          const Text('Toca para subir foto o video',
+                              style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
                         ],
                       ),
               ),
@@ -149,28 +144,32 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
             const SizedBox(height: 20),
 
             // Caption
-            TextField(
-              controller: _captionCtrl,
-              maxLines: 3,
-              maxLength: 300,
-              style: Theme.of(context).textTheme.bodyLarge,
-              decoration: const InputDecoration(
-                hintText: 'Escribí un caption... (posición, categoría, logros...)',
-                prefixIcon: Padding(
-                  padding: EdgeInsets.only(bottom: 32),
-                  child: Icon(Icons.edit_note, color: AppColors.textHint),
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF10131E),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.divider.withOpacity(0.3), width: 1),
+              ),
+              child: TextField(
+                controller: _captionCtrl,
+                maxLines: 4,
+                maxLength: 300,
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+                decoration: const InputDecoration(
+                  hintText: 'Escribe una descripción...',
+                  hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+                  counterText: "",
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(16),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 28),
 
             // Tags
-            Text('Estado / Tag', style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppColors.primary, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 6),
-            Text('Clasificá tu publicación para que el Mercado la indexe correctamente',
-                style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 14),
+            const Text('ETIQUETA DE ESTADO *', style: TextStyle(
+              color: AppColors.textSecondary, fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5)),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -182,27 +181,40 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                       if (isSelected) {
                         if (_selectedTags.length > 1) _selectedTags.remove(tagOption.$1);
                       } else {
+                        _selectedTags.clear();
                         _selectedTags.add(tagOption.$1);
                       }
                     });
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    width: cardWidth,
+                    height: 80,
+                    padding: const EdgeInsets.only(left: 12, top: 12, right: 8, bottom: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? tagOption.$3.withOpacity(0.2) : AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(24),
+                      color: isSelected ? const Color(0xFF1A1C28) : const Color(0xFF141624),
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isSelected ? tagOption.$3 : AppColors.divider,
-                        width: isSelected ? 2 : 1,
+                        color: isSelected ? tagOption.$5 : AppColors.divider.withOpacity(0.1),
+                        width: 1,
                       ),
                     ),
-                    child: Text(tagOption.$2,
-                      style: TextStyle(
-                        color: isSelected ? tagOption.$3 : AppColors.textSecondary,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                        fontSize: 14,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(tagOption.$4, size: 16, color: tagOption.$5), // Actually, wait, does tagOption.$5 exist? It's the 5th element! Yes.
+                            const SizedBox(width: 6),
+                            Expanded(child: Text(tagOption.$2, style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13), overflow: TextOverflow.ellipsis)),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(tagOption.$3, style: TextStyle(
+                          color: AppColors.textSecondary.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.w500, height: 1.1),
+                          maxLines: 2, overflow: TextOverflow.ellipsis),
+                      ],
                     ),
                   ),
                 );

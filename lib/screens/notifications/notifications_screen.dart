@@ -8,38 +8,46 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Notificaciones')),
-      body: ListView(
-        children: [
-          _NotifItem(
-            avatar: null,
-            emoji: '🏐',
-            title: 'GarciaVóley',
-            subtitle: 'le dio Me Gusta a tu publicación',
-            time: 'hace 5 min',
+      appBar: AppBar(
+        title: Row(
+          children: [
+            const Icon(Icons.notifications_none_outlined, color: AppColors.primary, size: 28),
+            const SizedBox(width: 10),
+            const Text('Notificaciones', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22)),
+          ],
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant, // Dark bluish grey matches image
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.notifications_none_outlined, size: 48, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              Text('Sin notificaciones', 
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 22,
+                  )),
+              const SizedBox(height: 12),
+              Text('Cuando alguien interactúe con tu contenido, lo verás aquí.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                  ), 
+                  textAlign: TextAlign.center),
+            ],
           ),
-          _NotifItem(
-            avatar: null,
-            emoji: '👤',
-            title: 'ClubAtlético',
-            subtitle: 'empezó a seguirte',
-            time: 'hace 1 h',
-          ),
-          _NotifItem(
-            avatar: null,
-            emoji: '💬',
-            title: 'MartinezCoach',
-            subtitle: 'comentó: "¡Excelente nivel de juego!"',
-            time: 'hace 2 h',
-          ),
-          _NotifItem(
-            avatar: null,
-            emoji: '📋',
-            title: 'Club Ferro',
-            subtitle: 'te envió un mensaje directo',
-            time: 'ayer',
-          ),
-        ],
+        ),
       ),
     );
   }

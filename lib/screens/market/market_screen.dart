@@ -16,12 +16,16 @@ class MarketScreen extends ConsumerStatefulWidget {
 
 class _MarketScreenState extends ConsumerState<MarketScreen> {
   final Set<String> _selectedTags = {};
+  String _selectedPosition = 'Todas las posiciones';
+  String _selectedCategory = 'Todas las categorías';
 
   static const _filterTags = [
     ('BuscoClub', '🏐 Busco Club', AppColors.tagBuscoClub),
     ('BuscoJugador', '👤 Busco Jugador', AppColors.tagBuscoJugador),
-    ('BuscoEntrenador', '📋 Busco DT', AppColors.tagBuscoEntrenador),
   ];
+
+  static const _positions = ['Todas las posiciones', 'Armador', 'Opuesto', 'Punta Receptor', 'Central', 'Líbero'];
+  static const _categories = ['Todas las categorías', 'División de Honor', 'Primera', 'Segunda', 'Tercera', 'Cuarta', 'Quinta', 'Sexta', 'Séptima'];
 
   @override
   Widget build(BuildContext context) {
@@ -31,53 +35,79 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            const Text('Mercado', style: TextStyle(fontWeight: FontWeight.w800)),
-            Text('Tablón de fichajes', style: Theme.of(context).textTheme.bodySmall),
+            const Icon(Icons.trending_up, color: AppColors.primary, size: 28),
+            const SizedBox(width: 10),
+            const Text('Mercado de Fichajes', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22)),
           ],
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: const Size.fromHeight(110),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _FilterChip(
-                    label: '⚡ Todos',
-                    isSelected: _selectedTags.isEmpty,
-                    color: AppColors.primary,
-                    onTap: () {
-                      setState(() {
-                        _selectedTags.clear();
-                        ref.read(marketFilterProvider.notifier).state = [];
-                      });
-                    },
+            child: Column(
+              children: [
+                // Tags Row
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _FilterChip(
+                        label: 'Todos',
+                        isSelected: _selectedTags.isEmpty,
+                        color: AppColors.primary,
+                        onTap: () {
+                          setState(() {
+                            _selectedTags.clear();
+                            ref.read(marketFilterProvider.notifier).state = [];
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      ..._filterTags.map((tag) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: _FilterChip(
+                          label: tag.$2,
+                          isSelected: _selectedTags.contains(tag.$1),
+                          color: tag.$3,
+                          onTap: () {
+                            setState(() {
+                              if (_selectedTags.contains(tag.$1)) {
+                                _selectedTags.remove(tag.$1);
+                              } else {
+                                _selectedTags.add(tag.$1);
+                              }
+                              ref.read(marketFilterProvider.notifier).state = _selectedTags.toList();
+                            });
+                          },
+                        ),
+                      )),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  ..._filterTags.map((tag) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: _FilterChip(
-                      label: tag.$2,
-                      isSelected: _selectedTags.contains(tag.$1),
-                      color: tag.$3,
-                      onTap: () {
-                        setState(() {
-                          if (_selectedTags.contains(tag.$1)) {
-                            _selectedTags.remove(tag.$1);
-                          } else {
-                            _selectedTags.add(tag.$1);
-                          }
-                          ref.read(marketFilterProvider.notifier).state = _selectedTags.toList();
-                        });
-                      },
-                    ),
-                  )),
-                ],
-              ),
+                ),
+                const SizedBox(height: 12),
+                // Dropdowns Row
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _DropdownFilter(
+                        value: _selectedPosition,
+                        items: _positions,
+                        onChanged: (val) => setState(() => _selectedPosition = val!),
+                      ),
+                      const SizedBox(width: 8),
+                      _DropdownFilter(
+                        value: _selectedCategory,
+                        items: _categories,
+                        onChanged: (val) => setState(() => _selectedCategory = val!),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
             ),
           ),
         ),
@@ -108,16 +138,66 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
 
   Widget _buildEmpty(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.search_off, size: 80, color: AppColors.textHint),
-          const SizedBox(height: 16),
-          Text('No hay publicaciones', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text('Aún no hay jugadores o clubes buscando equipo',
-              style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                color: const Color(0xFF231A17),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.trending_up, size: 48, color: AppColors.primary),
+            ),
+            const SizedBox(height: 24),
+            Text('Sin resultados', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 22)),
+            const SizedBox(height: 12),
+            Text('No hay publicaciones con estos filtros. Intenta\ncambiar los filtros.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary, fontSize: 15),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DropdownFilter extends StatelessWidget {
+  final String value;
+  final List<String> items;
+  final ValueChanged<String?> onChanged;
+
+  const _DropdownFilter({required this.value, required this.items, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.divider, width: 1.5),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary, size: 20),
+          dropdownColor: AppColors.surfaceVariant,
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500, fontFamily: 'Inter'),
+          onChanged: onChanged,
+          items: items.map<DropdownMenuItem<String>>((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Text(item),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

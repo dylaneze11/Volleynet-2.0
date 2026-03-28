@@ -33,7 +33,7 @@ class ProfileScreen extends ConsumerWidget {
         return Scaffold(
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: Text(user.displayName),
+            title: Text(user.displayName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22)),
             actions: isOwnProfile
                 ? [
                     IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () {}),
@@ -60,24 +60,20 @@ class ProfileScreen extends ConsumerWidget {
                         children: [
                           // Avatar
                           Container(
-                            padding: const EdgeInsets.all(3),
+                            width: 88,
+                            height: 88,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppColors.primary, AppColors.primaryLight],
-                              ),
                               shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.divider, width: 1),
+                              color: AppColors.surfaceVariant,
                             ),
-                            child: CircleAvatar(
-                              radius: 44,
-                              backgroundColor: AppColors.surfaceVariant,
-                              backgroundImage: user.photoUrl != null
-                                  ? CachedNetworkImageProvider(user.photoUrl!) : null,
-                              child: user.photoUrl == null
-                                  ? Text(
-                                      user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
-                                      style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                            child: ClipOval(
+                              child: user.photoUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: user.photoUrl!,
+                                      fit: BoxFit.cover,
                                     )
-                                  : null,
+                                  : const Icon(Icons.person_outline, size: 48, color: AppColors.textHint),
                             ),
                           ),
                           const SizedBox(width: 28),
@@ -94,27 +90,57 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      // Name + role badge
+                      const SizedBox(height: 24),
+                      
+                      // Name + Role Badge
+                      Text(user.displayName, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 18)),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Text(user.displayName,
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-                          const SizedBox(width: 10),
-                          _RoleBadge(role: user.role),
+                          const Icon(Icons.sports_volleyball, size: 14, color: AppColors.primary),
+                          const SizedBox(width: 4),
+                          Text(user.roleLabel, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 14)),
                         ],
                       ),
+                      
+                      // Location Pin
+                      if (user.city != null || user.location != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 14, color: AppColors.textHint),
+                            const SizedBox(width: 4),
+                            Text(user.city ?? user.location ?? '', style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                          ],
+                        ),
+                      ],
+                      
                       // Bio
                       if (user.bio != null && user.bio!.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(user.bio!, style: Theme.of(context).textTheme.bodyMedium),
+                        const SizedBox(height: 12),
+                        Text(user.bio!, style: const TextStyle(color: Colors.white, fontSize: 15)),
                       ],
                       const SizedBox(height: 16),
-                      // Role-specific info card
-                      _RoleInfoCard(user: user),
-                      const SizedBox(height: 16),
-                      // Buttons
-                      if (!isOwnProfile) ...[
+                      
+                      // Role-specific info chips
+                      _RoleInfoChips(user: user),
+                      const SizedBox(height: 24),
+                      
+                      // Edit profile Button
+                      if (isOwnProfile)
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: () {},
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: AppColors.divider.withOpacity(0.5)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: const Text('Editar perfil', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+                          ),
+                        )
+                      else ...[
                         Row(
                           children: [
                             Expanded(
@@ -153,20 +179,22 @@ class ProfileScreen extends ConsumerWidget {
                           ],
                         ),
                       ],
-                      if (isOwnProfile)
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () {},
-                            child: const Text('Editar perfil'),
-                          ),
-                        ),
+                      const SizedBox(height: 32),
+                      
+                      // Tabs
+                      const Divider(height: 1, color: AppColors.divider),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          const Icon(Icons.grid_on, color: AppColors.primary, size: 20),
+                          const SizedBox(width: 8),
+                          const Text('PUBLICACIONES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: 0.5)),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ),
-              // Grid divider
-              const SliverToBoxAdapter(child: Divider(height: 1)),
               // Posts grid
               postsAsync.when(
                 loading: () => const SliverToBoxAdapter(
@@ -179,14 +207,8 @@ class ProfileScreen extends ConsumerWidget {
                       child: Padding(
                         padding: EdgeInsets.all(40),
                         child: Center(
-                          child: Column(
-                            children: [
-                              Icon(Icons.grid_off, color: AppColors.textHint, size: 48),
-                              SizedBox(height: 12),
-                              Text('Aún no hay publicaciones',
-                                  style: TextStyle(color: AppColors.textHint)),
-                            ],
-                          ),
+                          child: Text('Aún no tienes publicaciones',
+                                  style: TextStyle(color: AppColors.textSecondary, fontSize: 15)),
                         ),
                       ),
                     );
@@ -250,84 +272,68 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Text(value, style: const TextStyle(color: Color(0xFF63A8FF), fontSize: 20, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
       ],
     );
   }
 }
 
-class _RoleBadge extends StatelessWidget {
-  final UserRole role;
-  const _RoleBadge({required this.role});
-
-  @override
-  Widget build(BuildContext context) {
-    String emoji;
-    Color color;
-    String label;
-    switch (role) {
-      case UserRole.player: emoji = '🏐'; color = AppColors.tagBuscoClub; label = 'Jugador/a'; break;
-      case UserRole.coach: emoji = '📋'; color = AppColors.tagBuscoEntrenador; label = 'Entrenador/a'; break;
-      case UserRole.club: emoji = '🏟️'; color = AppColors.primary; label = 'Club'; break;
-    }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
-      ),
-      child: Text('$emoji  $label', style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
-    );
-  }
-}
-
-class _RoleInfoCard extends StatelessWidget {
+class _RoleInfoChips extends StatelessWidget {
   final UserModel user;
-  const _RoleInfoCard({required this.user});
+  const _RoleInfoChips({required this.user});
 
   @override
   Widget build(BuildContext context) {
-    final items = <(IconData, String, String)>[];
+    final items = <(String, String)>[];
     switch (user.role) {
       case UserRole.player:
-        if (user.position != null) items.add((Icons.sports_volleyball_outlined, 'Posición', user.positionLabel));
-        if (user.height != null) items.add((Icons.height, 'Altura', '${user.height!.toInt()} cm'));
-        if (user.handedness != null) items.add((Icons.back_hand_outlined, 'Habilidad', user.handedness!));
-        if (user.category != null) items.add((Icons.military_tech_outlined, 'Categoría', user.category!));
+        if (user.position != null) items.add(('P', user.position!));
+        if (user.height != null) items.add(('A', '${user.height!.toInt()} cm'));
+        if (user.handedness != null) items.add(('H', user.handedness!));
+        if (user.category != null) items.add(('C', user.category!));
         break;
       case UserRole.coach:
-        if (user.certificationLevel != null) items.add((Icons.workspace_premium_outlined, 'Certificación', user.certificationLevel!));
-        if (user.yearsExperience != null) items.add((Icons.timer_outlined, 'Experiencia', '${user.yearsExperience} años'));
+        if (user.certificationLevel != null) items.add(('C', user.certificationLevel!));
+        if (user.yearsExperience != null) items.add(('E', '${user.yearsExperience} años'));
         break;
       case UserRole.club:
-        if (user.city != null) items.add((Icons.location_city_outlined, 'Ciudad', user.city!));
-        if (user.location != null) items.add((Icons.place_outlined, 'Dirección', user.location!));
-        if (user.trainingDays != null) items.add((Icons.calendar_today_outlined, 'Entrenamiento', user.trainingDays!));
+        if (user.city != null) items.add(('C', user.city!));
+        if (user.trainingDays != null) items.add(('D', user.trainingDays!));
         break;
     }
+    
+    // In image: Líbero, 170, Derecha, Mayores. Just text, maybe small colored bullets.
     if (items.isEmpty) return const SizedBox();
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 12,
-        children: items.map((item) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(item.$1, size: 16, color: AppColors.primary),
-            const SizedBox(width: 6),
-            Text('${item.$2}: ', style: const TextStyle(color: AppColors.textHint, fontSize: 13)),
-            Text(item.$3, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600)),
-          ],
-        )).toList(),
-      ),
+    
+    return Wrap(
+      spacing: 12,
+      runSpacing: 10,
+      children: items.map((item) {
+        // Asignar un color sutil al iconito inicial según tipo
+        Color dotColor;
+        if (item.$1 == 'A') dotColor = Colors.yellow.shade700;
+        else if (item.$1 == 'H') dotColor = Colors.amber;
+        else dotColor = AppColors.primary;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF141624),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.divider.withOpacity(0.1)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 6, height: 6, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
+              const SizedBox(width: 8),
+              Text(item.$2, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }

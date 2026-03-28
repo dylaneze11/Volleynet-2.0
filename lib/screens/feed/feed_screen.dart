@@ -18,19 +18,19 @@ class FeedScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]),
-                borderRadius: BorderRadius.circular(9),
-              ),
-              child: const Icon(Icons.sports_volleyball, color: Colors.white, size: 18),
+        title: RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontFamily: 'Outfit', // Assuming outfit is applied globally by theme
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
             ),
-            const SizedBox(width: 10),
-            const Text('VolleyNet', style: TextStyle(fontWeight: FontWeight.w800)),
-          ],
+            children: const [
+              TextSpan(text: 'Volley', style: TextStyle(color: AppColors.primary)),
+              TextSpan(text: 'Net', style: TextStyle(color: Colors.white)),
+            ],
+          ),
         ),
         actions: [
           IconButton(
@@ -68,22 +68,35 @@ class FeedScreen extends ConsumerWidget {
 
   Widget _buildEmptyFeed(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.sports_volleyball, size: 80, color: AppColors.textHint),
-          const SizedBox(height: 16),
-          Text('Tu feed está vacío', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text('Seguí jugadores y clubes para ver contenido',
-              style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
-          const SizedBox(height: 24),
-          OutlinedButton.icon(
-            icon: const Icon(Icons.search),
-            label: const Text('Explorar Mercado'),
-            onPressed: () => context.go('/market'),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                color: const Color(0xFF231A17), // Dark slightly warm/reddish tint matching image
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.sports_volleyball, size: 48, color: Colors.white),
+            ),
+            const SizedBox(height: 24),
+            Text('¡Bienvenido a VolleyNet!', 
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
+                )),
+            const SizedBox(height: 12),
+            Text('Aún no hay publicaciones. ¡Sé el primero en compartir!',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 15,
+                ), 
+                textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }

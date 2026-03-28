@@ -18,12 +18,12 @@ Future<void> main() async {
   try {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: 'REPLACE_WITH_YOUR_API_KEY',
-        appId: 'REPLACE_WITH_YOUR_APP_ID',
-        messagingSenderId: 'REPLACE_WITH_YOUR_SENDER_ID',
-        projectId: 'REPLACE_WITH_YOUR_PROJECT_ID',
-        storageBucket: 'REPLACE_WITH_YOUR_BUCKET',
-        authDomain: 'REPLACE_WITH_YOUR_AUTH_DOMAIN',
+        apiKey: 'AIzaSyCKAaxDOFmnxoRq-HmjdZfUOt-usdjUQ1Q',
+        appId: '1:165577824935:web:e4077a282d8f0c1ea41982',
+        messagingSenderId: '165577824935',
+        projectId: 'volleynet-b13f6',
+        storageBucket: 'volleynet-b13f6.firebasestorage.app',
+        authDomain: 'volleynet-b13f6.firebaseapp.com',
       ),
     );
   } catch (e) {

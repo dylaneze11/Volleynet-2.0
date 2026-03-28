@@ -57,38 +57,34 @@ class _AppShellState extends ConsumerState<AppShell> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Inicio',
+                _NavItem(icon: Icons.home_outlined, label: 'Inicio',
                     isActive: idx == 0, onTap: () => _onTap(0)),
-                _NavItem(icon: Icons.search_outlined, activeIcon: Icons.search, label: 'Mercado',
+                _NavItem(icon: Icons.search, label: 'Mercado',
                     isActive: idx == 1, onTap: () => _onTap(1)),
                 // Central publish button
                 GestureDetector(
                   onTap: () => _onTap(2),
                   child: Container(
-                    width: 52,
-                    height: 52,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.primaryLight],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.5),
-                          blurRadius: 14,
-                          offset: const Offset(0, 4),
+                          color: AppColors.primary.withOpacity(0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 32),
                   ),
                 ),
-                _NavItem(icon: Icons.notifications_outlined, activeIcon: Icons.notifications,
-                    label: 'Avisos', isActive: idx == 3, onTap: () => _onTap(3)),
-                _NavItem(icon: Icons.person_outline, activeIcon: Icons.person,
-                    label: 'Perfil', isActive: idx == 4, onTap: () => _onTap(4)),
+                _NavItem(icon: Icons.notifications_none_outlined, label: 'Alertas',
+                    isActive: idx == 3, onTap: () => _onTap(3)),
+                _NavItem(icon: Icons.person_outline, label: 'Perfil',
+                    isActive: idx == 4, onTap: () => _onTap(4)),
               ],
             ),
           ),
@@ -100,14 +96,12 @@ class _AppShellState extends ConsumerState<AppShell> {
 
 class _NavItem extends StatelessWidget {
   final IconData icon;
-  final IconData activeIcon;
   final String label;
   final bool isActive;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.icon,
-    required this.activeIcon,
     required this.label,
     required this.isActive,
     required this.onTap,
@@ -124,17 +118,17 @@ class _NavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isActive ? activeIcon : icon,
+              icon,
               color: isActive ? AppColors.primary : AppColors.textHint,
-              size: 24,
+              size: 26,
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 fontSize: 10,
                 color: isActive ? AppColors.primary : AppColors.textHint,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],
