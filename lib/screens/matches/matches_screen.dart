@@ -98,6 +98,7 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
           ),
         ),
       ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addMatch,
         icon: const Icon(Icons.add),
