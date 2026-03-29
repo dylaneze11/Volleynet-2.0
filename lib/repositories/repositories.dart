@@ -107,24 +107,29 @@ class PostRepository {
   }
 
   Stream<List<PostModel>> getMarketPosts({List<String>? tags, String? position, String? city}) {
-    Query query = _firestore.collection('posts').orderBy('createdAt', descending: true);
+    Query query = _firestore.collection('posts');
     if (tags != null && tags.isNotEmpty) {
       query = query.where('tags', arrayContainsAny: tags);
     } else {
       query = query.where('tags', arrayContainsAny: ['BuscoClub', 'BuscoJugador', 'BuscoEntrenador']);
     }
-    return query.snapshots().map(
-      (snap) => snap.docs.map((d) => PostModel.fromFirestore(d)).toList(),
-    );
+    return query.snapshots().map((snap) {
+      final posts = snap.docs.map((d) => PostModel.fromFirestore(d)).toList();
+      posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return posts;
+    });
   }
 
   Stream<List<PostModel>> getUserPosts(String uid) {
     return _firestore
         .collection('posts')
         .where('authorUid', isEqualTo: uid)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => PostModel.fromFirestore(d)).toList());
+        .map((snap) {
+          final posts = snap.docs.map((d) => PostModel.fromFirestore(d)).toList();
+          posts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return posts;
+        });
   }
 
   Future<String> uploadPostMedia(String uid, Uint8List bytes, String type) async {
@@ -187,9 +192,16 @@ class MessageRepository {
     return _firestore
         .collection('conversations')
         .where('participantIds', arrayContains: uid)
-        .orderBy('lastMessageAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => ConversationModel.fromFirestore(d)).toList());
+        .map((snap) {
+          final convs = snap.docs.map((d) => ConversationModel.fromFirestore(d)).toList();
+          convs.sort((a, b) {
+            final aAt = a.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bAt = b.lastMessageAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bAt.compareTo(aAt);
+          });
+          return convs;
+        });
   }
 
   Stream<List<MessageModel>> getMessages(String conversationId) {
