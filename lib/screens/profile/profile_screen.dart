@@ -47,9 +47,20 @@ class ProfileScreen extends ConsumerWidget {
                   ]
                 : null,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
+          body: RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () async {
+              ref.refresh(currentUserProvider);
+              if (targetUid != null) {
+                ref.refresh(userProfileProvider(targetUid));
+                ref.refresh(userPostsProvider(targetUid));
+              }
+              await Future.delayed(const Duration(seconds: 1));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(24),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Avatar
@@ -332,11 +343,13 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
           ),
+          ),
         );
       },
     );
   }
 }
+
 
 class _InfoItem extends StatelessWidget {
   final String label;
