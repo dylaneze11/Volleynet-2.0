@@ -50,40 +50,7 @@ final currentUserProvider = StreamProvider.autoDispose<UserModel?>((ref) {
 // ─── Feed Posts ───────────────────────────────────────────────────────────────
 
 final feedPostsProvider = StreamProvider.autoDispose<List<PostModel>>((ref) {
-  return Stream.value([
-    PostModel(
-      id: 'post_1',
-      authorUid: 'user_2',
-      authorName: 'Facundo Conte',
-      authorPhotoUrl: 'https://i.pravatar.cc/150?img=11',
-      authorRole: 'Jugador Pro',
-      mediaUrl: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?q=80&w=1000&auto=format&fit=crop',
-      mediaType: 'photo',
-      caption: '¡Gran victoria hoy en casa! 🔥🏐 #Voley #Win',
-      tags: [],
-      likeCount: 1542,
-      commentCount: 89,
-      likedBy: [],
-      location: 'Polideportivo Municipal',
-      createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-    PostModel(
-      id: 'post_2',
-      authorUid: 'user_3',
-      authorName: 'Club Ciudad de Buenos Aires',
-      authorPhotoUrl: 'https://i.pravatar.cc/150?img=33',
-      authorRole: 'Club',
-      mediaUrl: 'https://images.unsplash.com/photo-1593786481180-2a86b3cc757c?q=80&w=1000&auto=format&fit=crop',
-      mediaType: 'photo',
-      caption: 'Entrenamiento de martes listo ✅ Seguimos preparándonos.',
-      tags: [],
-      likeCount: 420,
-      commentCount: 12,
-      likedBy: [],
-      location: 'Club Ciudad',
-      createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-  ]);
+  return ref.watch(postRepositoryProvider).getFeedPosts();
 });
 
 // ─── Free Agents ──────────────────────────────────────────────────────────────
@@ -134,13 +101,14 @@ final freeAgentsProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
 final marketFilterProvider = StateProvider<List<String>>((ref) => []);
 
 final marketPostsProvider = StreamProvider.autoDispose<List<PostModel>>((ref) {
-  return Stream.value([]);
+  final tags = ref.watch(marketFilterProvider);
+  return ref.watch(postRepositoryProvider).getMarketPosts(tags: tags);
 });
 
 // ─── User Posts ───────────────────────────────────────────────────────────────
 
 final userPostsProvider = StreamProvider.autoDispose.family<List<PostModel>, String>((ref, uid) {
-  return Stream.value([]);
+  return ref.watch(postRepositoryProvider).getUserPosts(uid);
 });
 
 // ─── User Profile ─────────────────────────────────────────────────────────────
