@@ -172,7 +172,7 @@ class FeedScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
-                    'TEMPORADA 2024',
+                    'TEMPORADA 2026',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 12,
