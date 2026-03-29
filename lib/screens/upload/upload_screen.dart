@@ -79,136 +79,302 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider).valueOrNull;
+    final primaryColor = AppColors.primary;
+
     return Scaffold(
-      backgroundColor: AppColors.primaryContainer.withOpacity(0.1), // Fondo naranja claro
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text('Crear Publicación'),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => context.go('/home'),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+      backgroundColor: const Color(0xFFF5F0E6), // Beige claro
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Área punteada para subir archivo
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(0.5),
-                    width: 2,
-                    // Idealmente un borde punteado, pero usamos Border normal en default
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.close, color: primaryColor),
+                    onPressed: () => context.go('/home'),
                   ),
-                ),
-                child: _imageBytes != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(22),
-                        child: Image.memory(_imageBytes!, fit: BoxFit.cover),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.cloud_upload_outlined,
-                            size: 64,
-                            color: AppColors.primary.withOpacity(0.8),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Toca para subir',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: AppColors.primary,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'PNG, JPG o MP4 (Max. 10MB)',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.secondary,
-                                ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            
-            // Input de texto grande
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  )
+                  Text(
+                    'Crear Publicación',
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Text(
+                    'KINETIC',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ],
               ),
-              child: TextField(
-                controller: _captionCtrl,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: '¿Qué quieres compartir hoy?',
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  fillColor: Colors.transparent,
-                  contentPadding: EdgeInsets.all(24),
+            ),
+
+            // Profile Info header if user is loaded
+            if (user != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: (user.photoUrl?.isNotEmpty ?? false) 
+                        ? NetworkImage(user.photoUrl!) 
+                        : null,
+                      backgroundColor: Colors.grey.shade300,
+                      child: (user.photoUrl?.isEmpty ?? true) ? const Icon(Icons.person, color: Colors.grey) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.displayName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          user.roleLabel.toUpperCase(),
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            
-            // Hashtags Chips
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: _hashtags.map((tag) {
-                final isSelected = _selectedHashtags.contains(tag);
-                return FilterChip(
-                  label: Text(tag),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected) {
-                        _selectedHashtags.add(tag);
-                      } else {
-                        _selectedHashtags.remove(tag);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            
-            const SizedBox(height: 48),
-            
-            // Botón primario Publicar
-            ElevatedButton(
-              onPressed: _loading ? null : _publish,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Upload Area
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: CustomPaint(
+                        painter: _DottedBorderPainter(color: primaryColor.withOpacity(0.5)),
+                        child: Container(
+                          height: 200,
+                          alignment: Alignment.center,
+                          child: _imageBytes != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Image.memory(
+                                    _imageBytes!, 
+                                    fit: BoxFit.cover, 
+                                    width: double.infinity, 
+                                    height: double.infinity,
+                                  ),
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: primaryColor.withOpacity(0.15),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.camera_alt,
+                                        size: 32,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Toca para subir',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    const Text(
+                                      '(PNG, JPG o MP4)',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Caption Input
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: TextField(
+                        controller: _captionCtrl,
+                        maxLines: 4,
+                        style: const TextStyle(fontSize: 15),
+                        decoration: InputDecoration(
+                          hintText: '¿Qué quieres compartir hoy?',
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: const EdgeInsets.all(20),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Sugerencias
+                    Text(
+                      'SUGERENCIAS',
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _hashtags.map((tag) {
+                        final isSelected = _selectedHashtags.contains(tag);
+                        return FilterChip(
+                          label: Text(
+                            tag, 
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : primaryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          selected: isSelected,
+                          showCheckmark: false,
+                          backgroundColor: Colors.white,
+                          selectedColor: primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(
+                              color: primaryColor.withOpacity(isSelected ? 1.0 : 0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedHashtags.add(tag);
+                              } else {
+                                _selectedHashtags.remove(tag);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    
+                    const SizedBox(height: 40),
+
+                    // Submit Button
+                    ElevatedButton(
+                      onPressed: _loading ? null : _publish,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: _loading
+                          ? const SizedBox(
+                              height: 24, 
+                              width: 24, 
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                            )
+                          : const Text(
+                              'PUBLICAR AHORA', 
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                    ),
+                  ],
                 ),
               ),
-              child: _loading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Publicar Ahora', style: TextStyle(fontSize: 18)),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _DottedBorderPainter extends CustomPainter {
+  final Color color;
+  _DottedBorderPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      const Radius.circular(24),
+    );
+    path.addRRect(rrect);
+
+    // Create a dashed path
+    const dashWidth = 6.0;
+    const dashSpace = 4.0;
+    double distance = 0.0;
+    
+    final metrics = path.computeMetrics();
+    final dashedPath = Path();
+    for (final metric in metrics) {
+      while (distance < metric.length) {
+        dashedPath.addPath(
+          metric.extractPath(distance, distance + dashWidth), 
+          Offset.zero,
+        );
+        distance += dashWidth + dashSpace;
+      }
+      distance = 0.0;
+    }
+    
+    canvas.drawPath(dashedPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

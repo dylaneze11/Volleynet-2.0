@@ -267,6 +267,7 @@ class PostModel {
   final String? authorPhotoUrl;
   final String? authorRole;
   final String mediaUrl;
+  final Uint8List? localMediaBytes;
   final String mediaType; // 'photo' | 'video'
   final String? caption;
   final List<PostTag> tags;
@@ -283,6 +284,7 @@ class PostModel {
     this.authorPhotoUrl,
     this.authorRole,
     required this.mediaUrl,
+    this.localMediaBytes,
     this.mediaType = 'photo',
     this.caption,
     this.tags = const [],

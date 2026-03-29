@@ -164,7 +164,7 @@ final messagesProvider = StreamProvider.autoDispose.family<List<MessageModel>, S
 // ─── Comments ─────────────────────────────────────────────────────────────────
 
 final commentsProvider = StreamProvider.autoDispose.family<List<CommentModel>, String>((ref, postId) {
-  return Stream.value([]);
+  return ref.watch(postRepositoryProvider).getComments(postId);
 });
 
 // ─── Matches (Excel Table) ────────────────────────────────────────────────────
