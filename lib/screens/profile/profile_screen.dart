@@ -74,48 +74,30 @@ class ProfileScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   // Avatar with Edit Badge
-                  Stack(
-                    children: [
-                      Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 4),
-                          boxShadow: [
+                  Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 4),
+                      boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
                               blurRadius: 20,
                               spreadRadius: 2,
                             )
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: user.localPhotoBytes != null
-                              ? Image.memory(user.localPhotoBytes!, fit: BoxFit.cover, width: 140, height: 140)
-                              : (user.photoUrl != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: user.photoUrl!,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Container(color: AppColors.surfaceVariant, child: const Icon(Icons.person, size: 60, color: AppColors.secondary))),
-                        ),
-                      ),
-                      if (isOwnProfile)
-                        Positioned(
-                          bottom: 0,
-                          right: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 4),
-                            ),
-                            child: const Icon(Icons.edit, color: Colors.white, size: 20),
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: user.localPhotoBytes != null
+                          ? Image.memory(user.localPhotoBytes!, fit: BoxFit.cover, width: 140, height: 140)
+                          : (user.photoUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: user.photoUrl!,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(color: AppColors.surfaceVariant, child: const Icon(Icons.person, size: 60, color: AppColors.secondary))),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   
