@@ -15,11 +15,11 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   String _selectedFilter = 'Todos';
   final _searchController = TextEditingController();
 
-  static const _filters = ['Todos', 'Agentes Libres', 'Nacional', 'Internacional', 'Juveniles'];
+  static const _filters = ['Todos', 'Jugadores Libres', 'Nacional', 'Internacional', 'Juveniles'];
 
   @override
   Widget build(BuildContext context) {
-    final posts = ref.watch(marketPostsProvider);
+    final agents = ref.watch(freeAgentsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -114,7 +114,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
 
             // Main Content ListView
             Expanded(
-              child: posts.when(
+              child: agents.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Error: $e')),
                 data: (data) {
@@ -128,7 +128,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              'Agentes Libres\nDestacados',
+                              'Jugadores Libres',
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 height: 1.2,
                               ),
@@ -159,22 +159,14 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                       const SizedBox(height: 20),
 
                       // High Fidelity Player Cards
-                      const _PlayerCardMock(
-                        name: "MARCOS 'EL\nMURO' RUIZ",
-                        position: "Central",
-                        ageAndHeight: "2.10m | 31 años",
-                        reach: "3.65m",
-                        imgUrl: "https://images.unsplash.com/photo-1593341398860-264627b1406c?q=80&w=600",
-                        status: "MÁS BUSCADO",
-                      ),
-                      const _PlayerCardMock(
-                        name: "LUCÍA\nFERNANDEZ",
-                        position: "Opuesta",
-                        ageAndHeight: "1.88m | 24 años",
-                        reach: "3.10m",
-                        imgUrl: "https://images.unsplash.com/photo-1574629810360-7efbc5ea002c?q=80&w=600",
-                        status: "MÁS BUSCADA",
-                      ),
+                      ...data.map((user) => _PlayerCardMock(
+                        name: user.displayName.toUpperCase(),
+                        position: user.positionLabel.isEmpty ? "Jugador" : user.positionLabel,
+                        ageAndHeight: "${user.height != null ? '${(user.height! / 100).toStringAsFixed(2)}m' : '-'} | ${user.age ?? '-'} años",
+                        reach: "3.40m", // Mocked reach
+                        imgUrl: user.photoUrl ?? "https://images.unsplash.com/photo-1593341398860-264627b1406c?q=80&w=600",
+                        status: "JUGADOR LIBRE",
+                      )).toList(),
                       const SizedBox(height: 40), // Bottom padding for nav bar
                     ],
                   );

@@ -86,7 +86,50 @@ final feedPostsProvider = StreamProvider.autoDispose<List<PostModel>>((ref) {
   ]);
 });
 
-// ─── Market Posts ─────────────────────────────────────────────────────────────
+// ─── Free Agents ──────────────────────────────────────────────────────────────
+
+final freeAgentsProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
+  return Stream.value([
+    UserModel(
+      uid: 'free_1',
+      displayName: "MARCOS 'EL MURO' RUIZ",
+      email: 'muro@example.com',
+      role: UserRole.player,
+      position: PlayerPosition.middle,
+      height: 210,
+      age: 31,
+      category: 'Libre',
+      photoUrl: "https://images.unsplash.com/photo-1593341398860-264627b1406c?q=80&w=600",
+      createdAt: DateTime.now(),
+    ),
+    UserModel(
+      uid: 'free_2',
+      displayName: "LUCÍA FERNANDEZ",
+      email: 'lucia@example.com',
+      role: UserRole.player,
+      position: PlayerPosition.opposite,
+      height: 188,
+      age: 24,
+      category: 'Libre',
+      photoUrl: "https://images.unsplash.com/photo-1574629810360-7efbc5ea002c?q=80&w=600",
+      createdAt: DateTime.now(),
+    ),
+    UserModel(
+      uid: 'free_3',
+      displayName: "JUAN CRUZ",
+      email: 'juan@example.com',
+      role: UserRole.player,
+      position: PlayerPosition.outside,
+      height: 195,
+      age: 21,
+      category: 'Libre',
+      photoUrl: "https://images.unsplash.com/photo-1620986794691-30a84e6db614?q=80&w=600",
+      createdAt: DateTime.now(),
+    ),
+  ]);
+});
+
+// ─── Market Filter ────────────────────────────────────────────────────────────
 
 final marketFilterProvider = StateProvider<List<String>>((ref) => []);
 
