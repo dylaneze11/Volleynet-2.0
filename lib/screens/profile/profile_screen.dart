@@ -32,20 +32,31 @@ class ProfileScreen extends ConsumerWidget {
         if (user == null) return const Scaffold(body: Center(child: Text('Usuario no encontrado')));
         
         return Scaffold(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            title: Text(isOwnProfile ? 'Mi Perfil' : 'Perfil'),
-            actions: isOwnProfile
-                ? [
-                    IconButton(
-                      icon: const Icon(Icons.logout, color: AppColors.error),
-                      onPressed: () async {
-                        await ref.read(authRepositoryProvider).signOut();
-                        if (context.mounted) context.go('/auth/login');
-                      },
-                    ),
-                  ]
-                : null,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Row(
+              children: [
+                const Icon(Icons.sports_volleyball, color: AppColors.primary, size: 28),
+                const SizedBox(width: 8),
+                Text(
+                  'VolleyNet',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w900,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none, color: Colors.black87),
+                onPressed: () {},
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
           body: RefreshIndicator(
             color: AppColors.primary,
@@ -59,353 +70,269 @@ class ProfileScreen extends ConsumerWidget {
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Avatar
-                Center(
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 4),
-                      color: AppColors.surfaceVariant,
-                    ),
-                    child: ClipOval(
-                      child: user.localPhotoBytes != null
-                          ? Image.memory(user.localPhotoBytes!, fit: BoxFit.cover, width: 120, height: 120)
-                          : (user.photoUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: user.photoUrl!,
-                                  fit: BoxFit.cover,
-                                  width: 120,
-                                  height: 120,
-                                )
-                              : const Icon(Icons.person, size: 60, color: AppColors.secondary)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Name & Info
-                Text(
-                  user.displayName,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (user.pronoun != null && user.pronoun!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    user.pronoun!,
-                    style: const TextStyle(color: AppColors.secondary, fontStyle: FontStyle.italic),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                
-                // Position & Category Chip
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${user.positionLabel.isNotEmpty ? user.positionLabel : "Jugador"} · ${user.category ?? "Libre"}',
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Stats
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _StatColumn(
-                      label: 'Publicaciones', 
-                      count: postsAsync.value?.length.toString() ?? '-',
-                    ),
-                    const SizedBox(width: 24),
-                    _StatColumn(
-                      label: 'Seguidores', 
-                      count: user.followersCount.toString(),
-                    ),
-                    const SizedBox(width: 24),
-                    _StatColumn(
-                      label: 'Seguidos', 
-                      count: user.followingCount.toString(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                // Bio
-                if (user.bio != null && user.bio!.isNotEmpty) ...[
-                  Text(
-                    user.bio!,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                
-                // Status Chip (Busco Club)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: const Text(
-                    'Busco Club',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // Primary Action Button
-                if (isOwnProfile)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => context.push('/edit-profile'),
-                      child: const Text('Editar perfil'),
-                    ),
-                  )
-                else
-                  Row(
+                children: [
+                  // Avatar with Edit Badge
+                  Stack(
                     children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: const Text('Seguir'),
+                      Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            )
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: user.localPhotoBytes != null
+                              ? Image.memory(user.localPhotoBytes!, fit: BoxFit.cover, width: 140, height: 140)
+                              : (user.photoUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: user.photoUrl!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(color: AppColors.surfaceVariant, child: const Icon(Icons.person, size: 60, color: AppColors.secondary))),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {},
-                          child: const Text('Mensaje'),
+                      if (isOwnProfile)
+                        Positioned(
+                          bottom: 0,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 4),
+                            ),
+                            child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                          ),
                         ),
-                      ),
                     ],
                   ),
-                
-                const SizedBox(height: 24),
-                
-                // Additional Actions
-                Row(
-                  children: [
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.bar_chart,
-                        title: 'Mis estadísticas',
-                        onTap: () {},
-                      ),
+                  const SizedBox(height: 24),
+                  
+                  // Role
+                  Text(
+                    user.positionLabel.isNotEmpty ? user.positionLabel.toUpperCase() : "JUGADOR LIBRE",
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _ActionCard(
-                        icon: Icons.emoji_events,
-                        title: 'Mis logros',
-                        onTap: () {},
-                      ),
+                  ),
+                  const SizedBox(height: 6),
+                  
+                  // Name (Split by space to have multiple lines if possible, or just standard bold italic)
+                  Text(
+                    user.displayName.toUpperCase().replaceAll(' ', '\n'), 
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: const Color(0xFF111827),
+                      fontWeight: FontWeight.w900,
+                      fontStyle: FontStyle.italic,
+                      height: 0.9,
                     ),
-                  ],
-                ),
-                
-                const SizedBox(height: 32),
-
-                // Ficha Deportiva (Bento Info)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Ficha Deportiva',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.surfaceVariant),
+                  const SizedBox(height: 12),
+                  
+                  // Username and Club
+                  Text(
+                    '@${user.email.split('@')[0]} • ${user.pastClubs?.split('\n').first ?? "Sin Club"}',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 15, fontWeight: FontWeight.w500),
                   ),
-                  child: Column(
+                  const SizedBox(height: 32),
+                  
+                  // Stats
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(child: _InfoItem(label: 'Edad', value: user.age != null ? '${user.age} años' : '-')),
-                          Expanded(child: _InfoItem(label: 'Altura', value: user.height != null ? '${user.height} cm' : '-')),
-                          Expanded(child: _InfoItem(label: 'Género', value: user.gender ?? '-')),
-                        ],
+                      _StatColumn(count: postsAsync.value?.length.toString() ?? '0', label: 'PUBLICACIONES'),
+                      _StatColumn(count: '1.2k', label: 'SEGUIDORES'), // Mock as per design image
+                      _StatColumn(count: '382', label: 'SEGUIDOS'), // Mock as per design image
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  // Action Buttons
+                  if (isOwnProfile) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => context.push('/edit-profile'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          elevation: 8,
+                          shadowColor: AppColors.primary.withOpacity(0.5),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        child: const Text('Editar Perfil', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
-                      const Divider(height: 32),
-                      Row(
-                        children: [
-                          Expanded(child: _InfoItem(label: 'División', value: user.division ?? '-')),
-                          Expanded(child: _InfoItem(label: 'Liga', value: user.league ?? '-')),
-                        ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE5E7EB),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        ),
+                        child: const Text('Compartir', style: TextStyle(color: Color(0xFF1F2937), fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
-                      if (user.pastClubs != null && user.pastClubs!.isNotEmpty) ...[
-                        const Divider(height: 32),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Historial de Clubes', style: TextStyle(color: AppColors.secondary, fontSize: 13)),
-                              const SizedBox(height: 8),
-                              Text(
-                                user.pastClubs!,
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                              ),
-                            ],
+                    ),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            child: const Text('Seguir'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {},
+                            child: const Text('Mensaje'),
                           ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Highlights / Posts
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Mejores Momentos',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                postsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Center(child: Text('Error: $e')),
-                  data: (posts) {
-                    if (posts.isEmpty) {
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceVariant.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(24),
+                    ),
+                  ],
+                  
+                  const SizedBox(height: 48),
+                  
+                  // Ajustes de Cuenta
+                  if (isOwnProfile) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'AJUSTES DE CUENTA',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2.0,
                         ),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.photo_library_outlined, size: 48, color: AppColors.secondary),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Sin publicaciones',
-                              style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.secondary),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
                       ),
-                      itemCount: posts.length,
-                      itemBuilder: (ctx, i) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: CachedNetworkImage(
-                            imageUrl: posts[i].mediaUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(color: AppColors.surfaceVariant),
-                            errorWidget: (_, __, ___) => Container(
-                              color: AppColors.surfaceVariant,
-                              child: const Icon(Icons.error),
-                            ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(32),
+                      ),
+                      child: Column(
+                        children: [
+                          _SettingsTile(
+                            icon: Icons.person_outline,
+                            title: 'Información Personal',
+                            subtitle: 'Email, teléfono, dirección',
+                            onTap: () {},
                           ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
+                          _divider(),
+                          _SettingsTile(
+                            icon: Icons.lock_outline,
+                            title: 'Privacidad y Seguridad',
+                            subtitle: 'Contraseña, visibilidad del perfil',
+                            onTap: () {},
+                          ),
+                          _divider(),
+                          _SettingsTile(
+                            icon: Icons.credit_card_outlined,
+                            title: 'Métodos de Pago',
+                            subtitle: 'Suscripciones, tarjetas guardadas',
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Soporte
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'SOPORTE',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(32),
+                      ),
+                      child: Column(
+                        children: [
+                          _SettingsTile(
+                            icon: Icons.help_outline,
+                            title: 'Centro de Ayuda',
+                            subtitle: '',
+                            onTap: () {},
+                          ),
+                          _divider(),
+                          _SettingsTile(
+                            icon: Icons.description_outlined,
+                            title: 'Términos y Condiciones',
+                            subtitle: '',
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    // Logout Outlined Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.logout, color: Colors.red),
+                        label: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.red.withOpacity(0.2), width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          backgroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          await ref.read(authRepositoryProvider).signOut();
+                          if (context.mounted) context.go('/auth/login');
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ],
+              ),
             ),
-          ),
           ),
         );
       },
     );
   }
-}
 
-
-class _InfoItem extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoItem({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(color: AppColors.secondary, fontSize: 13)),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-      ],
-    );
-  }
-}
-
-class _ActionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
-  const _ActionCard({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.surfaceVariant, width: 2),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: AppColors.primary),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
+  Widget _divider() {
+    return Divider(height: 1, thickness: 1, color: Colors.grey.shade200, indent: 24, endIndent: 24);
   }
 }
 
@@ -421,14 +348,71 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           count,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: Colors.black87),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: AppColors.secondary, fontSize: 14),
+          style: TextStyle(
+            color: Colors.grey.shade500,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5,
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _SettingsTile({required this.icon, required this.title, required this.subtitle, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(32),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400),
+          ],
+        ),
+      ),
     );
   }
 }
