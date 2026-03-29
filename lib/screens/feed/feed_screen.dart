@@ -140,30 +140,16 @@ class FeedScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primary,
-                        ),
-                        child: const Text('Mis partidos'),
-                      ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.primary,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.go('/market'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white30, width: 2),
-                        ),
-                        child: const Text('Ir al mercado'),
-                      ),
-                    ),
-                  ],
+                    child: const Text('Mis partidos'),
+                  ),
                 ),
               ],
             ),
