@@ -67,8 +67,11 @@ class FeedScreen extends ConsumerWidget {
             style: Theme.of(context).textTheme.headlineLarge,
             children: const [
               TextSpan(text: 'Volley', style: TextStyle(color: AppColors.primary)),
-              TextSpan(text: 'Net'),
-              TextSpan(text: ' 🏐'),
+              TextSpan(text: 'Net '),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Icon(Icons.sports_volleyball, color: AppColors.primary, size: 32),
+              ),
             ],
           ),
         ),
