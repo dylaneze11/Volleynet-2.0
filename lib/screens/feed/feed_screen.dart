@@ -32,6 +32,11 @@ class FeedScreen extends ConsumerWidget {
               _buildHero(context),
               const SizedBox(height: 32),
               Text(
+                'Actividad de atletas',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 24),
+              Text(
                 'Destacados de la Semana',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
