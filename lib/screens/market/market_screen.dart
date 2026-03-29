@@ -34,7 +34,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'TEMPORADA 2024/25',
+                    'TEMPORADA 2026/27',
                     style: TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
