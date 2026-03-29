@@ -135,10 +135,11 @@ class ProfileScreen extends ConsumerWidget {
                   Text(
                     user.displayName.toUpperCase().replaceAll(' ', '\n'), 
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
                       color: const Color(0xFF111827),
                       fontWeight: FontWeight.w900,
                       fontStyle: FontStyle.italic,
+                      letterSpacing: -1.5,
                       height: 0.9,
                     ),
                   ),
@@ -211,6 +212,65 @@ class ProfileScreen extends ConsumerWidget {
                       ],
                     ),
                   ],
+                  
+                  const SizedBox(height: 40),
+                  
+                  // Ficha Deportiva (Bento Info)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'FICHA DEPORTIVA',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(child: _InfoItem(label: 'Edad', value: user.age != null ? '${user.age} años' : '-')),
+                            Expanded(child: _InfoItem(label: 'Altura', value: user.height != null ? '${(user.height! / 100).toStringAsFixed(2)}m' : '-')),
+                            Expanded(child: _InfoItem(label: 'Género', value: user.gender ?? '-')),
+                          ],
+                        ),
+                        const Divider(height: 32, color: Color(0xFFE5E7EB)),
+                        Row(
+                          children: [
+                            Expanded(child: _InfoItem(label: 'División', value: user.division ?? '-')),
+                            Expanded(child: _InfoItem(label: 'Liga', value: user.league ?? '-')),
+                          ],
+                        ),
+                        if (user.pastClubs != null && user.pastClubs!.isNotEmpty) ...[
+                          const Divider(height: 32, color: Color(0xFFE5E7EB)),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Historial de Clubes', style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 8),
+                                Text(
+                                  user.pastClubs!,
+                                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.black87),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                   
                   const SizedBox(height: 48),
                   
@@ -333,6 +393,25 @@ class ProfileScreen extends ConsumerWidget {
 
   Widget _divider() {
     return Divider(height: 1, thickness: 1, color: Colors.grey.shade200, indent: 24, endIndent: 24);
+  }
+}
+
+class _InfoItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.black87)),
+      ],
+    );
   }
 }
 
