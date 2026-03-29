@@ -13,6 +13,13 @@ class MatchesScreen extends ConsumerStatefulWidget {
 }
 
 class _MatchesScreenState extends ConsumerState<MatchesScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +37,15 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
+          child: Scrollbar(
+            controller: _scrollController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            thickness: 8,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
               columnSpacing: 24,
               horizontalMargin: 20,
               headingRowColor: WidgetStateProperty.all(AppColors.surfaceVariant),
