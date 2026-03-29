@@ -15,6 +15,7 @@ import '../../screens/profile/profile_screen.dart';
 import '../../screens/profile/edit_profile_screen.dart';
 import '../../screens/messages/conversations_screen.dart';
 import '../../screens/messages/chat_screen.dart';
+import '../../screens/matches/matches_screen.dart';
 import '../../models/models.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -90,6 +91,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final otherUser = state.extra as UserModel;
           return ChatScreen(conversationId: convId, otherUser: otherUser);
         },
+      ),
+      GoRoute(
+        path: '/matches',
+        builder: (context, state) => const MatchesScreen(),
       ),
       GoRoute(
         path: '/edit-profile',

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
+import '../models/match_model.dart';
 import '../repositories/repositories.dart';
 
 // ─── Repository Providers ────────────────────────────────────────────────────
@@ -89,4 +90,27 @@ final messagesProvider = StreamProvider.autoDispose.family<List<MessageModel>, S
 
 final commentsProvider = StreamProvider.autoDispose.family<List<CommentModel>, String>((ref, postId) {
   return Stream.value([]);
+});
+
+// ─── Matches (Excel Table) ────────────────────────────────────────────────────
+
+final matchesProvider = StateProvider<List<MatchModel>>((ref) {
+  return [
+    const MatchModel(
+      id: 'mock_match_1',
+      day: 'Sáb 15',
+      time: '18:00',
+      opponent: 'Club Estudiantes',
+      location: 'Local',
+      score: '',
+    ),
+    const MatchModel(
+      id: 'mock_match_2',
+      day: 'Sáb 22',
+      time: '19:30',
+      opponent: 'Vélez Sarsfield',
+      location: 'Visitante',
+      score: '3 - 0',
+    ),
+  ];
 });
