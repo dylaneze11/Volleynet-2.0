@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/providers.dart';
+import 'widgets/feed_post_card.dart';
 
 class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
@@ -49,9 +50,8 @@ class FeedScreen extends ConsumerWidget {
                   if (posts.isEmpty) {
                     return _buildEmptyState(context);
                   }
-                  // Return Bento items or list
                   return Column(
-                    children: posts.map((post) => _buildPostCard(context, post)).toList(),
+                    children: posts.map((post) => FeedPostCard(post: post)).toList(),
                   );
                 },
               ),
@@ -213,20 +213,5 @@ class FeedScreen extends ConsumerWidget {
       ),
     );
   }
-
-  Widget _buildPostCard(BuildContext context, dynamic post) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Text('Final de Copa Local', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text('Un gran post', style: Theme.of(context).textTheme.bodyMedium),
-          ],
-        ),
-      ),
-    );
-  }
 }
+
