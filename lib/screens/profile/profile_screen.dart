@@ -197,6 +197,75 @@ class ProfileScreen extends ConsumerWidget {
                   
                   const SizedBox(height: 40),
                   
+                  // Publicaciones (Grid estilo Instagram)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'PUBLICACIONES',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  postsAsync.when(
+                    loading: () => const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+                    error: (e, _) => Center(child: Text('Error: $e')),
+                    data: (posts) {
+                      if (posts.isEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.all(40),
+                          alignment: Alignment.center,
+                          child: Column(
+                            children: [
+                              Icon(Icons.camera_alt_outlined, size: 48, color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Aún no hay publicaciones',
+                                style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 2,
+                          mainAxisSpacing: 2,
+                          childAspectRatio: 1, // Cuadrados perfectos
+                        ),
+                        itemCount: posts.length,
+                        itemBuilder: (context, index) {
+                          final post = posts[index];
+                          return GestureDetector(
+                            onTap: () {
+                              // Podría abrir el post en detalle en el futuro
+                            },
+                            child: CachedNetworkImage(
+                              imageUrl: post.mediaUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(color: Colors.grey.shade200),
+                              errorWidget: (context, url, error) => Container(
+                                color: Colors.grey.shade200,
+                                child: const Icon(Icons.error, color: Colors.red),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
                   // Ficha Deportiva (Bento Info)
                   Align(
                     alignment: Alignment.centerLeft,
