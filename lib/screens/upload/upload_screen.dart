@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import '../../core/theme/app_theme.dart';
 import '../../models/models.dart';
 import '../../providers/providers.dart';
+import 'package:file_picker/file_picker.dart';
 
 class UploadScreen extends ConsumerStatefulWidget {
   const UploadScreen({super.key});
@@ -15,7 +16,9 @@ class UploadScreen extends ConsumerStatefulWidget {
 }
 
 class _UploadScreenState extends ConsumerState<UploadScreen> {
-  Uint8List? _imageBytes;
+  Uint8List? _mediaBytes;
+  bool _isVideo = false;
+  String _videoExtension = '';
   final _captionCtrl = TextEditingController();
   final Set<String> _selectedHashtags = {};
   bool _loading = false;
@@ -28,43 +31,111 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
     '#VoleyMasculino'
   ];
 
+  void _showMediaPicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.image, color: AppColors.primary),
+                title: const Text('Subir Foto'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.videocam, color: AppColors.primary),
+                title: const Text('Subir Video'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickVideo();
+                },
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (file != null) {
       final bytes = await file.readAsBytes();
-      setState(() => _imageBytes = bytes);
+      setState(() {
+        _mediaBytes = bytes;
+        _isVideo = false;
+      });
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['mp4', 'mov'],
+      withData: true, 
+    );
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.first;
+      if (file.size > 50 * 1024 * 1024) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('El video es demasiado grande (máx 50MB).')));
+        }
+        return;
+      }
+      setState(() {
+        _mediaBytes = file.bytes;
+        _isVideo = true;
+        _videoExtension = file.extension ?? 'mp4';
+      });
     }
   }
 
   Future<void> _publish() async {
-    if (_imageBytes == null) {
+    if (_mediaBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecciona una foto o video.')));
       return;
     }
     setState(() => _loading = true);
     try {
-      final user = ref.read(currentUserProvider).valueOrNull;
-      if (user == null) return;
-      final postRepo = ref.read(postRepositoryProvider);
-      final mediaUrl = await postRepo.uploadPostMedia(user.uid, _imageBytes!, 'photo');
-      final post = PostModel(
-        id: '',
-        authorUid: user.uid,
-        authorName: user.displayName,
-        authorPhotoUrl: user.photoUrl,
-        authorRole: user.roleLabel,
-        mediaUrl: mediaUrl,
-        mediaType: 'photo',
-        caption: '${_captionCtrl.text.trim()} ${_selectedHashtags.join(" ")}'.trim(),
-        tags: [PostTag.soloContenido],
-        createdAt: DateTime.now(),
-      );
-      await postRepo.createPost(post);
+      if (_isVideo) {
+        // Delegar subida de video al controller pasándole la data
+        await ref.read(interactionControllerProvider).uploadPostVideoData(
+          _mediaBytes!,
+          _videoExtension,
+          _captionCtrl.text,
+          _selectedHashtags.toList()
+        );
+      } else {
+        // Subida de imagen nativa
+        final user = ref.read(currentUserProvider).valueOrNull;
+        if (user == null) return;
+        final postRepo = ref.read(postRepositoryProvider);
+        final mediaUrl = await postRepo.uploadPostMedia(user.uid, _mediaBytes!, 'photo');
+        final post = PostModel(
+          id: '',
+          authorUid: user.uid,
+          authorName: user.displayName,
+          authorPhotoUrl: user.photoUrl,
+          authorRole: user.roleLabel,
+          mediaUrl: mediaUrl,
+          mediaType: 'photo',
+          caption: '${_captionCtrl.text.trim()} ${_selectedHashtags.join(" ")}'.trim(),
+          tags: [PostTag.soloContenido],
+          createdAt: DateTime.now(),
+        );
+        await postRepo.createPost(post);
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Publicación creada!')));
+          const SnackBar(content: Text('¡Publicación creada exitosamente!'), backgroundColor: Colors.green));
         context.go('/home');
       }
     } catch (e) {
@@ -168,22 +239,37 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                   children: [
                     // Upload Area
                     GestureDetector(
-                      onTap: _pickImage,
+                      onTap: _showMediaPicker,
                       child: CustomPaint(
                         painter: _DottedBorderPainter(color: primaryColor.withOpacity(0.5)),
                         child: Container(
                           height: 200,
                           alignment: Alignment.center,
-                          child: _imageBytes != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: Image.memory(
-                                    _imageBytes!, 
-                                    fit: BoxFit.cover, 
-                                    width: double.infinity, 
-                                    height: double.infinity,
-                                  ),
-                                )
+                          child: _mediaBytes != null
+                              ? (_isVideo) 
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.videocam, size: 48, color: AppColors.primary),
+                                      const SizedBox(height: 8),
+                                      const Text('Video listo para publicar', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      const SizedBox(height: 16),
+                                      TextButton.icon(
+                                        onPressed: _showMediaPicker, 
+                                        icon: const Icon(Icons.refresh), 
+                                        label: const Text('Cambiar video')
+                                      ),
+                                    ],
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(24),
+                                    child: Image.memory(
+                                      _mediaBytes!, 
+                                      fit: BoxFit.cover, 
+                                      width: double.infinity, 
+                                      height: double.infinity,
+                                    ),
+                                  )
                               : Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [

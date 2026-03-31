@@ -19,6 +19,7 @@ class FeedPostCard extends ConsumerStatefulWidget {
 class _FeedPostCardState extends ConsumerState<FeedPostCard> {
   late bool _isLiked;
   late int _likeCount;
+  bool _isSaved = false;
 
   @override
   void initState() {
@@ -111,7 +112,43 @@ class _FeedPostCardState extends ConsumerState<FeedPostCard> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.more_horiz),
-                  onPressed: () {},
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return SafeArea(
+                          child: Wrap(
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.share, color: Colors.blue),
+                                title: const Text('Compartir en...'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace preparado para compartir exteriormente')));
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.visibility_off),
+                                title: const Text('Ocultar publicación'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Esta publicación ha sido ocultada')));
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.report, color: Colors.red),
+                                title: const Text('Reportar', style: TextStyle(color: Colors.red)),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gracias, tu reporte será revisado.')));
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    );
+                  },
                 ),
               ],
             ),
@@ -166,12 +203,109 @@ class _FeedPostCardState extends ConsumerState<FeedPostCard> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.send_rounded),
-                  onPressed: () {},
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) {
+                        return Container(
+                          height: 320,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                                child: Text('Enviar a...', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, fontStyle: FontStyle.italic)),
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  itemCount: 8,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 16),
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 35,
+                                            backgroundColor: Colors.grey.shade200,
+                                            child: Icon(Icons.person, color: Colors.grey.shade400, size: 35),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text('Perfil ${index+1}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                                          const SizedBox(height: 12),
+                                          SizedBox(
+                                            height: 32,
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enviado a Perfil ${index+1} 🚀'), duration: const Duration(seconds: 2)));
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.primary, 
+                                                foregroundColor: Colors.white, 
+                                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+                                              ),
+                                              child: const Text('Enviar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                            )
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                )
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: OutlinedButton.icon(
+                                  icon: const Icon(Icons.link),
+                                  label: const Text('Copiar enlace de video', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    side: BorderSide(color: Colors.grey.shade300, width: 2)
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace copiado al portapapeles ✅')));
+                                  },
+                                ),
+                              )
+                            ],
+                          )
+                        );
+                      }
+                    );
+                  },
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.bookmark_border),
-                  onPressed: () {},
+                  icon: Icon(
+                    _isSaved ? Icons.bookmark : Icons.bookmark_border,
+                    color: _isSaved ? AppColors.primary : Colors.black87,
+                    size: 28,
+                  ).animate(target: _isSaved ? 1 : 0)
+                   .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: 150.ms, curve: Curves.easeOut)
+                   .then()
+                   .scale(begin: const Offset(1.2, 1.2), end: const Offset(1, 1), duration: 150.ms, curve: Curves.easeOut),
+                  onPressed: () {
+                    setState(() {
+                      _isSaved = !_isSaved;
+                    });
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(_isSaved ? 'Guardado en tus colecciones' : 'Eliminado de tus guardados'),
+                      duration: const Duration(seconds: 2),
+                    ));
+                  },
                 ),
               ],
             ),

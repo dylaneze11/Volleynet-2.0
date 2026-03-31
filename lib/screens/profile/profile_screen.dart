@@ -53,7 +53,9 @@ class ProfileScreen extends ConsumerWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: Colors.black87),
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No tienes nuevas notificaciones')));
+                },
               ),
               const SizedBox(width: 8),
             ],
@@ -165,7 +167,9 @@ class ProfileScreen extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace de perfil copiado al portapapeles ✅')));
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE5E7EB),
                           elevation: 0,
@@ -178,16 +182,13 @@ class ProfileScreen extends ConsumerWidget {
                   ] else ...[
                     Row(
                       children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            child: const Text('Seguir'),
-                          ),
-                        ),
+                        const _FollowButton(),
                         const SizedBox(width: 12),
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Abriendo Chat Directo...')));
+                            },
                             child: const Text('Mensaje'),
                           ),
                         ),
@@ -351,21 +352,27 @@ class ProfileScreen extends ConsumerWidget {
                             icon: Icons.person_outline,
                             title: 'Información Personal',
                             subtitle: 'Email, teléfono, dirección',
-                            onTap: () {},
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Navegando a Información Personal...')));
+                            },
                           ),
                           _divider(),
                           _SettingsTile(
                             icon: Icons.lock_outline,
                             title: 'Privacidad y Seguridad',
                             subtitle: 'Contraseña, visibilidad del perfil',
-                            onTap: () {},
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Navegando a Privacidad y Seguridad...')));
+                            },
                           ),
                           _divider(),
                           _SettingsTile(
                             icon: Icons.credit_card_outlined,
                             title: 'Métodos de Pago',
                             subtitle: 'Suscripciones, tarjetas guardadas',
-                            onTap: () {},
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Navegando a Métodos de Pago...')));
+                            },
                           ),
                         ],
                       ),
@@ -398,14 +405,18 @@ class ProfileScreen extends ConsumerWidget {
                             icon: Icons.help_outline,
                             title: 'Centro de Ayuda',
                             subtitle: '',
-                            onTap: () {},
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Navegando al Centro de Ayuda...')));
+                            },
                           ),
                           _divider(),
                           _SettingsTile(
                             icon: Icons.description_outlined,
                             title: 'Términos y Condiciones',
                             subtitle: '',
-                            onTap: () {},
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Navegando a Términos y Condiciones...')));
+                            },
                           ),
                         ],
                       ),
@@ -543,6 +554,48 @@ class _SettingsTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FollowButton extends StatefulWidget {
+  const _FollowButton();
+
+  @override
+  State<_FollowButton> createState() => _FollowButtonState();
+}
+
+class _FollowButtonState extends State<_FollowButton> {
+  bool _isFollowing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: _isFollowing
+          ? OutlinedButton(
+              onPressed: () => setState(() => _isFollowing = false),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Colors.grey.shade300, width: 2),
+                foregroundColor: Colors.black87,
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: const Text('Siguiendo', style: TextStyle(fontWeight: FontWeight.bold)),
+            )
+          : ElevatedButton(
+              onPressed: () {
+                setState(() => _isFollowing = true);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comenzaste a seguir a esta persona')));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: const Text('Seguir', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
     );
   }
 }

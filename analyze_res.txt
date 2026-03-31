@@ -1,0 +1,101 @@
+Analyzing Volleynet 2.0...                                      
+
+warning - Unused import: 'package:file_picker/file_picker.dart' - lib\controllers\interaction_controller.dart:3:8 - unused_import
+warning - The left operand can't be null, so the right operand is never executed - lib\controllers\interaction_controller.dart:41:43 - dead_null_aware_expression
+warning - The operand can't be 'null', so the condition is always 'false' - lib\controllers\interaction_controller.dart:72:33 - unnecessary_null_comparison
+warning - The '!' will have no effect because the receiver can't be null - lib\controllers\interaction_controller.dart:72:67 - unnecessary_non_null_assertion
+warning - Unused import: 'package:flutter/material.dart' - lib\core\router\app_router.dart:1:8 - unused_import
+warning - The value of the local variable 'authState' isn't used - lib\core\router\app_router.dart:22:9 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\login_screen.dart:53:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\login_screen.dart:67:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\login_screen.dart:93:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\login_screen.dart:151:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\login_screen.dart:153:67 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\register_step1_screen.dart:98:67 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\register_step1_screen.dart:102:77 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\register_step1_screen.dart:106:58 - deprecated_member_use
+warning - Unused import: 'package:flutter_animate/flutter_animate.dart' - lib\screens\auth\register_step2_screen.dart:4:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\register_step2_screen.dart:117:44 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\register_step2_screen.dart:119:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\register_step2_screen.dart:233:44 - deprecated_member_use
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\screens\auth\register_step2_screen.dart:311:7 - deprecated_member_use
+warning - Unused import: 'package:flutter_riverpod/flutter_riverpod.dart' - lib\screens\auth\splash_screen.dart:2:8 - unused_import
+warning - Unused import: '../../providers/providers.dart' - lib\screens\auth\splash_screen.dart:5:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\splash_screen.dart:54:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\splash_screen.dart:85:42 - deprecated_member_use
+warning - The value of 'refresh' should be used - lib\screens\feed\feed_screen.dart:21:17 - unused_result
+warning - The value of 'refresh' should be used - lib\screens\feed\feed_screen.dart:22:17 - unused_result
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\feed_screen.dart:99:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\feed_screen.dart:181:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\feed_screen.dart:183:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\feed_screen.dart:193:47 - deprecated_member_use
+   info - Don't put any logic in 'createState' - lib\screens\feed\widgets\feed_post_card.dart:16:48 - no_logic_in_create_state
+  error - The method '_FeedPostCardState' isn't defined for the type 'FeedPostCard' - lib\screens\feed\widgets\feed_post_card.dart:16:48 - undefined_method
+  error - Invalid context for 'super' invocation - lib\screens\feed\widgets\feed_post_card.dart:25:5 - super_in_invalid_context
+  error - Invalid context for 'super' invocation - lib\screens\feed\widgets\feed_post_card.dart:31:5 - super_in_invalid_context
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:32:9 - undefined_identifier
+  error - Undefined name 'ref' - lib\screens\feed\widgets\feed_post_card.dart:38:25 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:39:39 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:40:18 - undefined_identifier
+  error - Undefined name 'ref' - lib\screens\feed\widgets\feed_post_card.dart:44:25 - undefined_identifier
+  error - The function 'setState' isn't defined - lib\screens\feed\widgets\feed_post_card.dart:47:5 - undefined_function
+  error - Undefined name 'ref' - lib\screens\feed\widgets\feed_post_card.dart:52:5 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:52:49 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:58:39 - undefined_identifier
+  error - Undefined name 'ref' - lib\screens\feed\widgets\feed_post_card.dart:60:25 - undefined_identifier
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\widgets\feed_post_card.dart:67:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\widgets\feed_post_card.dart:70:33 - deprecated_member_use
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:88:36 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:89:52 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:91:26 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:101:25 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:104:27 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:106:27 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:158:23 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:198:68 - undefined_identifier
+  error - The function 'setState' isn't defined - lib\screens\feed\widgets\feed_post_card.dart:299:21 - undefined_function
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:324:21 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:324:52 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:330:36 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:333:40 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:339:21 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:348:70 - undefined_identifier
+  error - Undefined name 'widget' - lib\screens\feed\widgets\feed_post_card.dart:353:34 - undefined_identifier
+  error - Expected a method, getter, setter or operator declaration - lib\screens\feed\widgets\feed_post_card.dart:370:1 - expected_executable
+   info - Don't use 'BuildContext's across async gaps - lib\screens\feed\widgets\feed_post_card.dart:402:21 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\feed\widgets\feed_post_card.dart:404:28 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\widgets\feed_post_card.dart:426:81 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\widgets\feed_post_card.dart:507:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\feed\widgets\feed_post_card.dart:533:61 - deprecated_member_use
+warning - Unused import: '../../models/models.dart' - lib\screens\market\market_screen.dart:4:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market\market_screen.dart:62:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market\market_screen.dart:87:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market\market_screen.dart:132:65 - deprecated_member_use
+warning - The receiver can't be null, so the null-aware operator '?.' is unnecessary - lib\screens\market\market_screen.dart:199:47 - invalid_null_aware_operator
+   info - Unnecessary use of 'toList' in a spread - lib\screens\market\market_screen.dart:205:26 - unnecessary_to_list_in_spreads
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market\market_screen.dart:248:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market\market_screen.dart:270:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market\market_screen.dart:434:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\market\market_screen.dart:468:26 - deprecated_member_use
+warning - The declaration '_NotifItem' isn't referenced - lib\screens\notifications\notifications_screen.dart:56:7 - unused_element
+warning - A value for optional parameter 'avatar' isn't ever given - lib\screens\notifications\notifications_screen.dart:63:26 - unused_element_parameter
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\notifications\notifications_screen.dart:87:36 - deprecated_member_use
+warning - Unused import: '../../models/models.dart' - lib\screens\profile\edit_profile_screen.dart:9:8 - unused_import
+warning - The value of 'refresh' should be used - lib\screens\profile\profile_screen.dart:66:19 - unused_result
+warning - The operand can't be 'null', so the condition is always 'true' - lib\screens\profile\profile_screen.dart:67:29 - unnecessary_null_comparison
+warning - The value of 'refresh' should be used - lib\screens\profile\profile_screen.dart:68:21 - unused_result
+warning - The value of 'refresh' should be used - lib\screens\profile\profile_screen.dart:69:21 - unused_result
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile\profile_screen.dart:87:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile\profile_screen.dart:159:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile\profile_screen.dart:434:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\profile\profile_screen.dart:529:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\shell\app_shell.dart:47:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\shell\app_shell.dart:80:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\shell\app_shell.dart:94:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\shell\app_shell.dart:141:75 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\shell\app_shell.dart:150:77 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\upload\upload_screen.dart:244:75 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\upload\upload_screen.dart:279:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\upload\upload_screen.dart:367:51 - deprecated_member_use
+warning - The asset directory 'assets/images/' doesn't exist - pubspec.yaml:43:7 - asset_directory_does_not_exist
+

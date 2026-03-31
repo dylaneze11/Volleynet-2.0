@@ -19,7 +19,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final agents = ref.watch(freeAgentsProvider);
+    final agents = ref.watch(filteredScoutingProfilesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -72,6 +72,41 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(100),
                     borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Dropdown Menu de Posiciones
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: ref.watch(positionFilterProvider),
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down, color: AppColors.secondary),
+                    dropdownColor: AppColors.surface,
+                    style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
+                    items: const [
+                      DropdownMenuItem(value: 'Posición', child: Text('Todas las Posiciones')),
+                      DropdownMenuItem(value: 'Armador', child: Text('Armador')),
+                      DropdownMenuItem(value: 'Líbero', child: Text('Líbero')),
+                      DropdownMenuItem(value: 'Opuesto', child: Text('Opuesto')),
+                      DropdownMenuItem(value: 'Punta', child: Text('Punta')),
+                      DropdownMenuItem(value: 'Central', child: Text('Central')),
+                    ],
+                    onChanged: (newValue) {
+                      if (newValue != null) {
+                        ref.read(positionFilterProvider.notifier).state = newValue;
+                      }
+                    },
                   ),
                 ),
               ),
@@ -160,7 +195,8 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
 
                       // High Fidelity Player Cards
                       ...data.map((user) => _PlayerCardMock(
-                        name: user.displayName.toUpperCase(),
+                        userId: user.uid,
+                        name: user.displayName?.toUpperCase() ?? 'SIN NOMBRE',
                         position: user.positionLabel.isEmpty ? "Jugador" : user.positionLabel,
                         ageAndHeight: "${user.height != null ? '${(user.height! / 100).toStringAsFixed(2)}m' : '-'} | ${user.age ?? '-'} años",
                         reach: "3.40m", // Mocked reach
@@ -180,7 +216,8 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   }
 }
 
-class _PlayerCardMock extends StatelessWidget {
+class _PlayerCardMock extends ConsumerWidget {
+  final String userId;
   final String name;
   final String position;
   final String ageAndHeight;
@@ -189,6 +226,7 @@ class _PlayerCardMock extends StatelessWidget {
   final String imgUrl;
 
   const _PlayerCardMock({
+    required this.userId,
     required this.name,
     required this.position,
     required this.ageAndHeight,
@@ -198,7 +236,7 @@ class _PlayerCardMock extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       height: 400,
@@ -317,7 +355,19 @@ class _PlayerCardMock extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          try {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enviando solicitud...')));
+                            await ref.read(interactionControllerProvider).sendConnectionRequest(userId);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Solicitud enviada con éxito.'), backgroundColor: Colors.green));
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: AppColors.error));
+                            }
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -331,7 +381,55 @@ class _PlayerCardMock extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                              backgroundColor: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.all(24.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('Estadísticas de $name', textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: [
+                                        _DetailStat('Ataque', '88', Colors.red),
+                                        _DetailStat('Defensa', '74', Colors.blue),
+                                        _DetailStat('Saque', '91', Colors.orange),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 24),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      children: [
+                                        _DetailStat('Bloqueo', '82', Colors.purple),
+                                        _DetailStat('Armado', '65', Colors.teal),
+                                        _DetailStat('Físico', '95', Colors.green),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 32),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(color: Colors.grey.shade300, width: 2),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          padding: const EdgeInsets.symmetric(vertical: 16),
+                                        ),
+                                        child: const Text('Cerrar', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            )
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.15),
                           foregroundColor: Colors.white,
@@ -349,6 +447,38 @@ class _PlayerCardMock extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DetailStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _DetailStat(this.label, this.value, this.color);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            value,
+            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54),
+        )
+      ],
     );
   }
 }

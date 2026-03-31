@@ -19,8 +19,24 @@ class AuthRepository {
     return await _auth.signInWithEmailAndPassword(email: email, password: password);
   }
 
-  Future<UserCredential> registerWithEmail(String email, String password) async {
-    return await _auth.createUserWithEmailAndPassword(email: email, password: password);
+  Future<UserCredential> registerWithEmail(String email, String password, [String? name]) async {
+    final cred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+    if (name != null && name.isNotEmpty) {
+      await cred.user?.updateDisplayName(name);
+      
+      // Intentar crear un perfil base en Firestore aquí para que no falle luego
+      try {
+        await createUserProfile(UserModel(
+          uid: cred.user!.uid,
+          email: email,
+          displayName: name,
+          tagline: 'Nuevo Jugador',
+          role: UserRole.player,
+          createdAt: DateTime.now(),
+        ));
+      } catch (_) {}
+    }
+    return cred;
   }
 
   Future<void> signOut() async => await _auth.signOut();

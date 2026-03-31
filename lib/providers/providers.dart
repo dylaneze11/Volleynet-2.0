@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
 import '../models/match_model.dart';
 import '../repositories/repositories.dart';
+export '../controllers/interaction_controller.dart';
 
 // ─── Repository Providers ────────────────────────────────────────────────────
 
@@ -94,6 +95,25 @@ final freeAgentsProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
       createdAt: DateTime.now(),
     ),
   ]);
+});
+
+// ─── Free Agents Filter (Scouting) ──────────────────────────────────────────────
+
+final positionFilterProvider = StateProvider<String>((ref) => 'Posición');
+
+final filteredScoutingProfilesProvider = StreamProvider.autoDispose<List<UserModel>>((ref) {
+  final selectedPosition = ref.watch(positionFilterProvider);
+  final baseList = ref.watch(freeAgentsProvider).value ?? [];
+
+  if (selectedPosition == 'Posición') {
+    return Stream.value(baseList);
+  }
+
+  final filtered = baseList.where((user) {
+    return user.positionLabel.toLowerCase() == selectedPosition.toLowerCase();
+  }).toList();
+
+  return Stream.value(filtered);
 });
 
 // ─── Market Filter ────────────────────────────────────────────────────────────

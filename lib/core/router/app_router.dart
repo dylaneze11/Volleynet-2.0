@@ -24,7 +24,22 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      // TEMPORAL: Permite navegación libre para probar la UI
+      final isLoggedIn = authState.valueOrNull != null;
+      final isGoingToAuth = state.matchedLocation.startsWith('/auth');
+      final isSplash = state.matchedLocation == '/splash';
+
+      if (isSplash) return null;
+
+      // Si no hay sesión y tampoco va hacia la pantalla de login, bloqueado y mandado a login.
+      if (!isLoggedIn && !isGoingToAuth) {
+        return '/auth/login';
+      }
+      
+      // Si ya hay sesión pero intenta ir al login, mandado de vuelta al feed.
+      if (isLoggedIn && isGoingToAuth) {
+        return '/home';
+      }
+
       return null;
     },
     routes: [

@@ -32,49 +32,6 @@ class FeedScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               _buildHero(context),
               const SizedBox(height: 32),
-              Text(
-                'Destacados de la Semana',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              
-              // Cuadro de destacados (Scroll horizontal)
-              SizedBox(
-                height: 140,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    final titles = ['Mejor Jugada', 'Resumen Femenino', 'MVP del Mes'];
-                    final colors = [AppColors.primary, AppColors.secondary, Colors.orange];
-                    return Container(
-                      width: 200,
-                      margin: const EdgeInsets.only(right: 16),
-                      decoration: BoxDecoration(
-                        color: colors[index].withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(20),
-                        image: const DecorationImage(
-                          image: NetworkImage('https://images.unsplash.com/photo-1593786481180-2a86b3cc757c?q=80&w=300&auto=format&fit=crop'),
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        titles[index],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              
-              const SizedBox(height: 32),
               
               // Título de la actividad social de los usuarios
               Text(
