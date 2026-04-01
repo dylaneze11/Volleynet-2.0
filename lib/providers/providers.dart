@@ -15,7 +15,7 @@ final messageRepositoryProvider = Provider<MessageRepository>((ref) => MessageRe
 // ─── Development Mock Data ──────────────────────────────────────────────────────
 
 final authStateProvider = StreamProvider<User?>((ref) {
-  return Stream.value(null); // Mock auth state
+  return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
 final _mockUser = UserModel(
@@ -44,8 +44,9 @@ final mockUserProvider = StateProvider<UserModel>((ref) => _mockUser);
 // ─── Current User Profile ─────────────────────────────────────────────────────
 
 final currentUserProvider = StreamProvider.autoDispose<UserModel?>((ref) {
-  // PREVIEW MODO: Ignorar auth y devolver usuario de prueba
-  return Stream.value(ref.watch(mockUserProvider));
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return Stream.value(null);
+  return ref.watch(userRepositoryProvider).watchUser(user.uid);
 });
 
 // ─── Feed Posts ───────────────────────────────────────────────────────────────
@@ -134,7 +135,11 @@ final userPostsProvider = StreamProvider.autoDispose.family<List<PostModel>, Str
 // ─── User Profile ─────────────────────────────────────────────────────────────
 
 final userProfileProvider = FutureProvider.autoDispose.family<UserModel?, String>((ref, uid) async {
-  return ref.watch(mockUserProvider);
+  final currentUid = ref.watch(authStateProvider).valueOrNull?.uid;
+  if (uid == currentUid) {
+    return ref.watch(currentUserProvider).valueOrNull;
+  }
+  return ref.watch(userRepositoryProvider).getUserById(uid);
 });
 
 // ─── Conversations ────────────────────────────────────────────────────────────
