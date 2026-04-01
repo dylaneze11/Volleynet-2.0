@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/providers.dart';
 import '../../screens/auth/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
-import '../../screens/auth/register_step1_screen.dart';
-import '../../screens/auth/register_step2_screen.dart';
+import '../../screens/auth/register_screen.dart';
 import '../../screens/shell/app_shell.dart';
 import '../../screens/feed/feed_screen.dart';
 import '../../screens/market/market_screen.dart';
@@ -63,14 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/auth/register',
-        builder: (context, state) => const RegisterStep1Screen(),
-      ),
-      GoRoute(
-        path: '/auth/register/details',
-        builder: (context, state) {
-          final role = state.extra as UserRole;
-          return RegisterStep2Screen(role: role);
-        },
+        builder: (context, state) => const RegisterScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
