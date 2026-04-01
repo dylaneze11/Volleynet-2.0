@@ -30,7 +30,7 @@ class AuthRepository {
           uid: cred.user!.uid,
           email: email,
           displayName: name,
-          tagline: 'Nuevo Jugador',
+          bio: 'Nuevo Jugador',
           role: UserRole.player,
           createdAt: DateTime.now(),
         ));
@@ -159,6 +159,19 @@ class PostRepository {
   Future<String> createPost(PostModel post) async {
     final ref = await _firestore.collection('posts').add(post.toFirestore());
     return ref.id;
+  }
+
+  Future<void> deletePost(String postId) async {
+    // Primero intentamos borrar los comentarios asociados para que no queden huérfanos
+    final commentsSnap = await _firestore.collection('posts').doc(postId).collection('comments').get();
+    final batch = _firestore.batch();
+    for (var doc in commentsSnap.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+
+    // Luego borramos el post
+    await _firestore.collection('posts').doc(postId).delete();
   }
 
   Future<void> toggleLike(String postId, String uid) async {

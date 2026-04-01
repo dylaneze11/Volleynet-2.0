@@ -248,7 +248,7 @@ class ProfileScreen extends ConsumerWidget {
                           final post = posts[index];
                           return GestureDetector(
                             onTap: () {
-                              // Podría abrir el post en detalle en el futuro
+                              context.push('/post-detail', extra: post);
                             },
                             child: CachedNetworkImage(
                               imageUrl: post.mediaUrl,

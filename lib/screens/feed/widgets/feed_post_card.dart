@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/models.dart';
 import '../../../providers/providers.dart';
@@ -113,36 +114,93 @@ class _FeedPostCardState extends ConsumerState<FeedPostCard> {
                 IconButton(
                   icon: const Icon(Icons.more_horiz),
                   onPressed: () {
+                    final isAuthor = currentUser?.uid == widget.post.authorUid;
+                    
                     showModalBottomSheet(
                       context: context,
                       builder: (context) {
                         return SafeArea(
                           child: Wrap(
                             children: [
-                              ListTile(
-                                leading: const Icon(Icons.share, color: Colors.blue),
-                                title: const Text('Compartir en...'),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace preparado para compartir exteriormente')));
-                                },
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.visibility_off),
-                                title: const Text('Ocultar publicación'),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Esta publicación ha sido ocultada')));
-                                },
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.report, color: Colors.red),
-                                title: const Text('Reportar', style: TextStyle(color: Colors.red)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gracias, tu reporte será revisado.')));
-                                },
-                              ),
+                              if (isAuthor) ...[
+                                ListTile(
+                                  leading: const Icon(Icons.edit, color: Colors.blue),
+                                  title: const Text('Editar publicación', style: TextStyle(color: Colors.blue)),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Función "Editar" próximamente')));
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.archive, color: Colors.orange),
+                                  title: const Text('Archivar publicación', style: TextStyle(color: Colors.orange)),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Función "Archivar" próximamente')));
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.delete, color: Colors.red),
+                                  title: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                                  onTap: () {
+                                    Navigator.pop(context); // Close bottomsheet
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text('¿Eliminar publicación?'),
+                                        content: const Text('Esta acción no se puede deshacer.'),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+                                          TextButton(
+                                            onPressed: () async {
+                                              Navigator.pop(ctx); // close dialog
+                                              try {
+                                                await ref.read(postRepositoryProvider).deletePost(widget.post.id);
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Publicación eliminada')));
+                                                  if (GoRouterState.of(context).matchedLocation == '/post-detail') {
+                                                    context.pop();
+                                                  }
+                                                }
+                                              } catch (e) {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al eliminar')));
+                                                }
+                                              }
+                                            },
+                                            child: const Text('Eliminar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ] else ...[
+                                ListTile(
+                                  leading: const Icon(Icons.share, color: Colors.blue),
+                                  title: const Text('Compartir en...'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enlace preparado para compartir exteriormente')));
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.visibility_off),
+                                  title: const Text('Ocultar publicación'),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Esta publicación ha sido ocultada')));
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.report, color: Colors.red),
+                                  title: const Text('Reportar', style: TextStyle(color: Colors.red)),
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gracias, tu reporte será revisado.')));
+                                  },
+                                ),
+                              ],
                             ],
                           ),
                         );

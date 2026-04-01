@@ -13,6 +13,7 @@ import '../../screens/upload/upload_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../screens/profile/edit_profile_screen.dart';
+import '../../screens/profile/post_detail_screen.dart';
 import '../../screens/messages/conversations_screen.dart';
 import '../../screens/messages/chat_screen.dart';
 import '../../screens/matches/matches_screen.dart';
@@ -114,6 +115,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/edit-profile',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/post-detail',
+        builder: (context, state) {
+          final post = state.extra as PostModel?;
+          if (post == null) return const Scaffold(body: Center(child: Text('Publicación no encontrada')));
+          return PostDetailScreen(post: post);
+        },
       ),
     ],
   );
