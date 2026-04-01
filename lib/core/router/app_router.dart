@@ -19,13 +19,22 @@ import '../../screens/messages/chat_screen.dart';
 import '../../screens/matches/matches_screen.dart';
 import '../../models/models.dart';
 
+final _authListenableProvider = Provider<ValueNotifier<bool>>((ref) {
+  final notifier = ValueNotifier<bool>(false);
+  ref.listen(authStateProvider, (_, next) {
+    notifier.value = next.valueOrNull != null;
+  });
+  return notifier;
+});
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final refreshNotifier = ref.watch(_authListenableProvider);
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
-      final isLoggedIn = authState.valueOrNull != null;
+      final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
       final isGoingToAuth = state.matchedLocation.startsWith('/auth');
       final isSplash = state.matchedLocation == '/splash';
 
