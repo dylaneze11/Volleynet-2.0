@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/providers.dart';
+import '../../core/utils/page_reload.dart';
 import 'widgets/feed_post_card.dart';
 
 class FeedScreen extends ConsumerWidget {
@@ -18,9 +19,8 @@ class FeedScreen extends ConsumerWidget {
         child: RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
-            ref.refresh(feedPostsProvider);
-            ref.refresh(currentUserProvider);
-            await Future.delayed(const Duration(seconds: 1));
+            reloadPage();
+            await Future.delayed(const Duration(milliseconds: 500));
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),

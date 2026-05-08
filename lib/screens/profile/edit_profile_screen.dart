@@ -90,25 +90,28 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     setState(() => _isLoading = true);
     
     try {
-      final oldUser = ref.read(mockUserProvider);
+      final currentUser = ref.read(currentUserProvider).valueOrNull;
+      if (currentUser == null) throw Exception("Usuario no cargado");
       
-      final updatedUser = oldUser.copyWith(
-        displayName: _nameCtrl.text.trim(),
-        pronoun: _pronounCtrl.text.trim(),
-        age: int.tryParse(_ageCtrl.text.trim()) ?? oldUser.age,
-        gender: _selectedGender,
-        bio: _bioCtrl.text.trim(),
-        // To properly map position String to PlayerPosition, we just keep string logic in UI for now and skip position enum remapping, or map it:
-        // Or if we want to save position, we might need a converter. For now, since `position` is an enum and `category` is string:
-        category: _categoryCtrl.text.trim(),
-        height: double.tryParse(_heightCtrl.text.trim()) ?? oldUser.height,
-        division: _divisionCtrl.text.trim(),
-        league: _leagueCtrl.text.trim(),
-        pastClubs: _pastClubsCtrl.text.trim(),
-        localPhotoBytes: _imageBytes ?? oldUser.localPhotoBytes,
-      );
+      final updateData = <String, dynamic>{
+        'displayName': _nameCtrl.text.trim(),
+        'pronoun': _pronounCtrl.text.trim(),
+        'age': int.tryParse(_ageCtrl.text.trim()),
+        'gender': _selectedGender,
+        'bio': _bioCtrl.text.trim(),
+        'category': _categoryCtrl.text.trim(),
+        'height': double.tryParse(_heightCtrl.text.trim()),
+        'division': _divisionCtrl.text.trim(),
+        'league': _leagueCtrl.text.trim(),
+        'pastClubs': _pastClubsCtrl.text.trim(),
+      };
 
-      ref.read(mockUserProvider.notifier).state = updatedUser;
+      await ref.read(userRepositoryProvider).updateProfile(currentUser.uid, updateData);
+
+      if (_imageBytes != null && _imageBytes != currentUser.localPhotoBytes) {
+        final url = await ref.read(userRepositoryProvider).uploadAvatar(currentUser.uid, _imageBytes!);
+        await ref.read(userRepositoryProvider).updateProfile(currentUser.uid, {'photoUrl': url});
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -12,17 +12,24 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserProvider).valueOrNull;
+    final currentUserAsync = ref.watch(currentUserProvider);
+    final currentUser = currentUserAsync.valueOrNull;
     final targetUid = uid ?? currentUser?.uid;
 
     if (targetUid == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      if (currentUserAsync.isLoading) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+      if (currentUserAsync.hasError) {
+        return Scaffold(body: Center(child: Text('Error al cargar perfil:\n${currentUserAsync.error}', textAlign: TextAlign.center)));
+      }
+      return const Scaffold(body: Center(child: Text('Perfil de usuario no disponible. Intenta volver a iniciar sesión.')));
     }
 
     final isOwnProfile = targetUid == currentUser?.uid;
-    final profileAsync = uid != null
-        ? ref.watch(userProfileProvider(targetUid))
-        : AsyncData<UserModel?>(currentUser);
+    final profileAsync = isOwnProfile
+        ? currentUserAsync
+        : ref.watch(userProfileProvider(targetUid));
     final postsAsync = ref.watch(userPostsProvider(targetUid));
 
     return profileAsync.when(

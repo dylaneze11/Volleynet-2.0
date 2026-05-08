@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/models.dart';
 import '../../../providers/providers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FeedPostCard extends ConsumerStatefulWidget {
   final PostModel post;
@@ -114,7 +116,9 @@ class _FeedPostCardState extends ConsumerState<FeedPostCard> {
                 IconButton(
                   icon: const Icon(Icons.more_horiz),
                   onPressed: () {
-                    final isAuthor = currentUser?.uid == widget.post.authorUid;
+                    final authUid = FirebaseAuth.instance.currentUser?.uid;
+                    final isAuthor = (authUid != null && authUid == widget.post.authorUid) || 
+                                     (currentUser?.uid == widget.post.authorUid);
                     
                     showModalBottomSheet(
                       context: context,
@@ -141,7 +145,7 @@ class _FeedPostCardState extends ConsumerState<FeedPostCard> {
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.delete, color: Colors.red),
-                                  title: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                                  title: const Text('Eliminar publicación', style: TextStyle(color: Colors.red)),
                                   onTap: () {
                                     Navigator.pop(context); // Close bottomsheet
                                     showDialog(

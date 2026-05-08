@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/providers.dart';
 
@@ -20,18 +21,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscure = true;
   String? _error;
 
+  @override
+  void initState() {
+    super.initState();
+    _emailCtrl.addListener(() => setState(() {}));
+    _passCtrl.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
+
+  bool get _isFormValid => _emailCtrl.text.trim().isNotEmpty && _passCtrl.text.isNotEmpty;
+
   Future<void> _submit() async {
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text;
-    if (email.isEmpty || pass.isEmpty) {
-      setState(() => _error = 'Por favor, introduce tus datos.');
-      return;
-    }
+    if (!_isFormValid) return;
     
     setState(() { _loading = true; _error = null; });
     try {
       await ref.read(authRepositoryProvider).signInWithEmail(email, pass);
-      // El ruteador redirige automáticamente al detectar la sesión activa.
+      // Riverpod + GoRouter hacen la redirección automáticamente con transición.
+    } on FirebaseAuthException catch (e) {
+      String msj = 'Ocurrió un error al iniciar sesión';
+      if (e.code == 'user-not-found' || e.code == 'invalid-email') {
+        msj = 'No existe una cuenta vinculada a este correo.';
+      } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        msj = 'La contraseña o el email son incorrectos.';
+      } else if (e.code == 'user-disabled') {
+        msj = 'Esta cuenta ha sido deshabilitada.';
+      } else if (e.code == 'too-many-requests') {
+        msj = 'Demasiados intentos. Intenta más tarde.';
+      }
+      setState(() => _error = msj);
     } catch (e) {
       setState(() => _error = 'Email o contraseña incorrectos');
     } finally {
@@ -43,7 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     const bgColor = Color(0xFFE5E7EB);
     const cardColor = Colors.white;
-    const inputColor = Color(0xFFF3F4F6); // Fondo sutil para inputs estilo Instagram
+    const inputColor = Color(0xFFF3F4F6);
     
     return Scaffold(
       backgroundColor: bgColor,
@@ -53,7 +79,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // --- TARJETA PRINCIPAL (Instagram Style) ---
               Container(
                 width: 400,
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
@@ -61,25 +86,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   color: cardColor,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    )
+                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 10))
                   ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // LOGO Y TÍTULO
                     const Center(
                       child: Text(
                         'VolleyNet',
                         style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 42,
-                          fontFamily: 'Inter', // Si no hay una fuente logo, Inter/Lexend
+                          fontFamily: 'Inter',
                           fontWeight: FontWeight.w900,
                           fontStyle: FontStyle.italic,
                           letterSpacing: -1.5,
@@ -88,10 +108,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 48),
 
-                    // FORMULARIO DE LOGIN
                     _buildTextField(
                       controller: _emailCtrl,
-                      hint: 'Teléfono, usuario o correo electrónico',
+                      hint: 'Nombre de jugador o email',
                       fillColor: inputColor,
                       inputType: TextInputType.emailAddress,
                     ),
@@ -112,15 +131,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                     const SizedBox(height: 24),
                     
-                    // BOTÓN INICIAR SESIÓN
                     SizedBox(
                       height: 44,
                       child: ElevatedButton(
-                        onPressed: _loading ? null : _submit,
+                        onPressed: (_loading || !_isFormValid) ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
+                          disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
                           elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), // Radio suave estilo IG
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         child: _loading 
                             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
@@ -130,7 +149,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     
                     const SizedBox(height: 24),
                     
-                    // DIVIDER "O"
                     Row(
                       children: [
                         Expanded(child: Divider(color: Colors.grey.shade300, thickness: 1)),
@@ -143,11 +161,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // SOCIAL LOGIN (Mocked)
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Abriendo Google Auth SDK...')));
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Funcionalidad en desarrollo')));
                         },
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -164,7 +181,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Center(
                       child: GestureDetector(
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enviando enlace de recuperación...')));
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Funcionalidad en desarrollo')));
                         },
                         child: const Text('¿Has olvidado la contraseña?', style: TextStyle(color: Color(0xFF1E40AF), fontSize: 12)),
                       ),
@@ -175,7 +192,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               
               const SizedBox(height: 20),
 
-              // --- TARJETA DE "REGÍSTRATE" ---
               Container(
                 width: 400,
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -215,7 +231,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Container(
       decoration: BoxDecoration(
         color: fillColor,
-        borderRadius: BorderRadius.circular(6), // Radio pequeño estilo IG
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.grey.shade300, width: 1),
       ),
       child: TextFormField(

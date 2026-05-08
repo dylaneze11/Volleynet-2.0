@@ -54,18 +54,46 @@ class UserRepository {
 
   Future<UserModel?> getUserById(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
-    if (!doc.exists) return null;
+    if (!doc.exists) {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null && currentUser.uid == uid) {
+        return UserModel(
+          uid: uid,
+          email: currentUser.email ?? '',
+          displayName: currentUser.displayName ?? 'Usuario Nuevo',
+          role: UserRole.player,
+          createdAt: DateTime.now(),
+        );
+      }
+      return null;
+    }
     return UserModel.fromFirestore(doc);
   }
 
   Stream<UserModel?> watchUser(String uid) {
     return _firestore.collection('users').doc(uid).snapshots().map(
-      (doc) => doc.exists ? UserModel.fromFirestore(doc) : null,
+      (doc) {
+        if (doc.exists) {
+          return UserModel.fromFirestore(doc);
+        } else {
+          final currentUser = FirebaseAuth.instance.currentUser;
+          if (currentUser != null && currentUser.uid == uid) {
+            return UserModel(
+              uid: uid,
+              email: currentUser.email ?? '',
+              displayName: currentUser.displayName ?? 'Usuario Nuevo',
+              role: UserRole.player,
+              createdAt: DateTime.now(),
+            );
+          }
+          return null;
+        }
+      }
     );
   }
 
   Future<void> updateProfile(String uid, Map<String, dynamic> data) async {
-    await _firestore.collection('users').doc(uid).update(data);
+    await _firestore.collection('users').doc(uid).set(data, SetOptions(merge: true));
   }
 
   Future<String> uploadAvatar(String uid, Uint8List imageBytes) async {

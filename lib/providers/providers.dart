@@ -135,10 +135,6 @@ final userPostsProvider = StreamProvider.autoDispose.family<List<PostModel>, Str
 // ─── User Profile ─────────────────────────────────────────────────────────────
 
 final userProfileProvider = FutureProvider.autoDispose.family<UserModel?, String>((ref, uid) async {
-  final currentUid = ref.watch(authStateProvider).valueOrNull?.uid;
-  if (uid == currentUid) {
-    return ref.watch(currentUserProvider).valueOrNull;
-  }
   return ref.watch(userRepositoryProvider).getUserById(uid);
 });
 

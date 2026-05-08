@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/models.dart';
 import '../../providers/providers.dart';
 import '../../core/theme/app_theme.dart';
@@ -22,6 +23,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _passConfirmCtrl = TextEditingController();
   bool _obscure = true;
 
   // --- Step 1: Role ---
@@ -60,6 +62,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         setState(() => _error = 'Por favor, llena los campos básicos');
         return;
       }
+      if (_passCtrl.text != _passConfirmCtrl.text) {
+        setState(() => _error = 'Las contraseñas no coinciden');
+        return;
+      }
       setState(() => _currentStep = 1);
     } else if (_currentStep == 1) {
       if (_selectedRole == null) {
@@ -84,7 +90,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       final userRepo = ref.read(userRepositoryProvider);
       
       // 1. Firebase Auth Registration
-      final cred = await authRepo.registerWithEmail(_emailCtrl.text.trim(), _passCtrl.text);
+      final cred = await authRepo.registerWithEmail(_emailCtrl.text.trim(), _passCtrl.text, _nameCtrl.text.trim());
       
       // 2. Build User Model (All extras are optional)
       final user = UserModel(
@@ -109,8 +115,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       
       // (Wait for authStateProvider to kick in and redirect via app_router.dart automatically)
       
+    } on FirebaseAuthException catch (e) {
+      String msj = 'Error al registrarte: Verifica los datos e intenta de nuevo.';
+      if (e.code == 'email-already-in-use') {
+        msj = 'Este correo ya está registrado en otra cuenta.';
+      } else if (e.code == 'weak-password') {
+        msj = 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+      } else if (e.code == 'invalid-email') {
+        msj = 'El formato del correo electrónico es inválido.';
+      }
+      setState(() => _error = msj);
     } catch (e) {
-      setState(() => _error = 'Error al registrarte: Verifica los datos e intenta con otro email.');
+      setState(() => _error = 'Error inesperado al registrarte. Verifica tu conexión a internet.');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -286,9 +302,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       children: [
         _buildTextField(controller: _emailCtrl, hint: 'Correo electrónico', inputType: TextInputType.emailAddress),
         const SizedBox(height: 12),
-        _buildTextField(controller: _nameCtrl, hint: 'Nombre completo'),
+        _buildTextField(controller: _nameCtrl, hint: 'Nombre de usuario/completo'),
         const SizedBox(height: 12),
         _buildTextField(controller: _passCtrl, hint: 'Contraseña', isPassword: true),
+        const SizedBox(height: 12),
+        _buildTextField(controller: _passConfirmCtrl, hint: 'Confirmar contraseña', isPassword: true),
       ],
     );
   }
