@@ -148,8 +148,8 @@ class ProfileScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _StatColumn(count: postsAsync.value?.length.toString() ?? '0', label: 'PUBLICACIONES'),
-                      _StatColumn(count: '1.2k', label: 'SEGUIDORES'), // Mock as per design image
-                      _StatColumn(count: '382', label: 'SEGUIDOS'), // Mock as per design image
+                      _StatColumn(count: user.followersCount.toString(), label: 'SEGUIDORES'),
+                      _StatColumn(count: user.followingCount.toString(), label: 'SEGUIDOS'),
                     ],
                   ),
                   const SizedBox(height: 32),
