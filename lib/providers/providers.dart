@@ -52,7 +52,14 @@ final currentUserProvider = StreamProvider.autoDispose<UserModel?>((ref) {
 // ─── Feed Posts ───────────────────────────────────────────────────────────────
 
 final feedPostsProvider = StreamProvider.autoDispose<List<PostModel>>((ref) {
-  return ref.watch(postRepositoryProvider).getFeedPosts();
+  final currentUser = ref.watch(currentUserProvider).valueOrNull;
+
+  if (currentUser == null || currentUser.following.isEmpty) {
+    return Stream.value([]);
+  }
+
+  // We pass the following list to the repository to filter posts
+  return ref.watch(postRepositoryProvider).getFeedPosts(following: currentUser.following);
 });
 
 // ─── Free Agents ──────────────────────────────────────────────────────────────

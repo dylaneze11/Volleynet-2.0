@@ -139,11 +139,20 @@ class PostRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  Stream<List<PostModel>> getFeedPosts({DocumentSnapshot? lastDoc, int limit = 10}) {
+  Stream<List<PostModel>> getFeedPosts({DocumentSnapshot? lastDoc, int limit = 10, List<String>? following}) {
     Query query = _firestore
         .collection('posts')
         .orderBy('createdAt', descending: true)
         .limit(limit);
+        
+    if (following != null && following.isNotEmpty) {
+      // Firebase 'whereIn' supports up to 10 elements.
+      // If a user follows more than 10 people, we limit to the first 10 for this query
+      // or we'd need to chunk the queries (advanced). For now, this suffices.
+      final queryList = following.length > 10 ? following.sublist(0, 10) : following;
+      query = query.where('authorUid', whereIn: queryList);
+    }
+    
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     return query.snapshots().map(
       (snap) => snap.docs.map((d) => PostModel.fromFirestore(d)).toList(),
