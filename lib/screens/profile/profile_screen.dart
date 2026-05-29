@@ -189,7 +189,7 @@ class ProfileScreen extends ConsumerWidget {
                   ] else ...[
                     Row(
                       children: [
-                        const _FollowButton(),
+                        _FollowButton(targetUid: targetUid),
                         const SizedBox(width: 12),
                         Expanded(
                           child: OutlinedButton(
@@ -257,15 +257,20 @@ class ProfileScreen extends ConsumerWidget {
                             onTap: () {
                               context.push('/post-detail', extra: post);
                             },
-                            child: CachedNetworkImage(
-                              imageUrl: post.mediaUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: Colors.grey.shade200),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey.shade200,
-                                child: const Icon(Icons.error, color: Colors.red),
-                              ),
-                            ),
+                            child: post.mediaUrl != null
+                                ? CachedNetworkImage(
+                                    imageUrl: post.mediaUrl!,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(color: Colors.grey.shade200),
+                                    errorWidget: (context, url, error) => Container(
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(Icons.error, color: Colors.red),
+                                    ),
+                                  )
+                                : Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(Icons.text_fields, color: Colors.grey),
+                                  ),
                           );
                         },
                       );
@@ -565,44 +570,62 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-class _FollowButton extends StatefulWidget {
-  const _FollowButton();
+class _FollowButton extends ConsumerStatefulWidget {
+  final String targetUid;
+
+  const _FollowButton({required this.targetUid});
 
   @override
-  State<_FollowButton> createState() => _FollowButtonState();
+  ConsumerState<_FollowButton> createState() => _FollowButtonState();
 }
 
-class _FollowButtonState extends State<_FollowButton> {
-  bool _isFollowing = false;
+class _FollowButtonState extends ConsumerState<_FollowButton> {
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentUserProvider).valueOrNull;
+    final isFollowing = currentUser?.following.contains(widget.targetUid) ?? false;
+
     return Expanded(
-      child: _isFollowing
-          ? OutlinedButton(
-              onPressed: () => setState(() => _isFollowing = false),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.grey.shade300, width: 2),
-                foregroundColor: Colors.black87,
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: const Text('Siguiendo', style: TextStyle(fontWeight: FontWeight.bold)),
-            )
-          : ElevatedButton(
-              onPressed: () {
-                setState(() => _isFollowing = true);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comenzaste a seguir a esta persona')));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: const Text('Seguir', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
+      child: _loading
+          ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))
+          : isFollowing
+              ? OutlinedButton(
+                  onPressed: () async {
+                    if (currentUser == null) return;
+                    setState(() => _loading = true);
+                    try {
+                      await ref.read(userRepositoryProvider).unfollowUser(currentUser.uid, widget.targetUid);
+                    } catch (_) {}
+                    if (mounted) setState(() => _loading = false);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey.shade300, width: 2),
+                    foregroundColor: Colors.black87,
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Siguiendo', style: TextStyle(fontWeight: FontWeight.bold)),
+                )
+              : ElevatedButton(
+                  onPressed: () async {
+                    if (currentUser == null) return;
+                    setState(() => _loading = true);
+                    try {
+                      await ref.read(userRepositoryProvider).followUser(currentUser.uid, widget.targetUid);
+                    } catch (_) {}
+                    if (mounted) setState(() => _loading = false);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Seguir', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
     );
   }
 }

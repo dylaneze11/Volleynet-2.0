@@ -5,6 +5,7 @@ import '../../providers/providers.dart';
 import '../../screens/auth/splash_screen.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_screen.dart';
+import '../../screens/onboarding/suggest_follow_screen.dart';
 import '../../screens/shell/app_shell.dart';
 import '../../screens/feed/feed_screen.dart';
 import '../../screens/market/market_screen.dart';
@@ -35,6 +36,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggedIn = ref.read(authStateProvider).valueOrNull != null;
       final isGoingToAuth = state.matchedLocation.startsWith('/auth');
+      final isGoingToOnboarding = state.matchedLocation.startsWith('/onboarding');
       final isSplash = state.matchedLocation == '/splash';
 
       if (isSplash) return null;
@@ -47,6 +49,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Si ya hay sesión pero intenta ir al login, mandado de vuelta al feed.
       if (isLoggedIn && isGoingToAuth) {
         return '/home';
+      }
+
+      // Permitir acceso a onboarding aunque esté autenticado
+      if (isLoggedIn && isGoingToOnboarding) {
+        return null;
       }
 
       return null;
@@ -63,6 +70,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding/suggest-follow',
+        builder: (context, state) => const SuggestFollowScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),

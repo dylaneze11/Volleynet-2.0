@@ -4,6 +4,7 @@ import '../models/models.dart';
 import '../models/match_model.dart';
 import '../repositories/repositories.dart';
 export '../controllers/interaction_controller.dart';
+export 'feed_provider.dart';
 
 // ─── Repository Providers ────────────────────────────────────────────────────
 

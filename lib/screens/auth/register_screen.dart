@@ -87,7 +87,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      final userRepo = ref.read(userRepositoryProvider);
       
       // 1. Firebase Auth Registration
       final cred = await authRepo.registerWithEmail(_emailCtrl.text.trim(), _passCtrl.text, _nameCtrl.text.trim());
@@ -113,7 +112,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       // 3. Save User Data
       await authRepo.createUserProfile(user);
       
-      // (Wait for authStateProvider to kick in and redirect via app_router.dart automatically)
+      // Navigate to onboarding to follow people
+      if (mounted) {
+        context.go('/onboarding/suggest-follow');
+      }
       
     } on FirebaseAuthException catch (e) {
       String msj = 'Error al registrarte: Verifica los datos e intenta de nuevo.';

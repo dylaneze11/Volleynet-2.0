@@ -8,7 +8,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/models.dart';
 import '../../../providers/providers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FeedPostCard extends ConsumerStatefulWidget {
   final PostModel post;
@@ -54,6 +53,274 @@ class _FeedPostCardState extends ConsumerState<FeedPostCard> {
     });
     
     ref.read(postRepositoryProvider).toggleLike(widget.post.id, currentUser.uid);
+  }
+
+  Widget _buildPostContent(BuildContext context) {
+    switch (widget.post.type) {
+      case PostType.text:
+        return _buildTextContent();
+      case PostType.photo:
+        return _buildPhotoContent();
+      case PostType.video:
+        return _buildVideoContent();
+      case PostType.event:
+        return _buildEventContent();
+      case PostType.result:
+        return _buildResultContent();
+    }
+  }
+
+  Widget _buildTextContent() {
+    if (widget.post.caption == null || widget.post.caption!.isEmpty) {
+      return const SizedBox(height: 8);
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          widget.post.caption!,
+          style: const TextStyle(fontSize: 15, height: 1.4),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoContent() {
+    if (widget.post.mediaUrl == null || widget.post.mediaUrl!.isEmpty) {
+      return _buildTextContent();
+    }
+    return Column(
+      children: [
+        CachedNetworkImage(
+          imageUrl: widget.post.mediaUrl!,
+          fit: BoxFit.cover,
+          height: 350,
+          width: double.infinity,
+          placeholder: (context, url) => Container(
+            height: 350,
+            color: AppColors.surfaceVariant,
+            child: const Center(child: CircularProgressIndicator()),
+          ),
+          errorWidget: (context, url, error) => Container(
+            height: 350,
+            color: AppColors.surfaceVariant,
+            child: const Icon(Icons.error),
+          ),
+        ),
+        if (widget.post.caption != null && widget.post.caption!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Text(
+              widget.post.caption!,
+              style: const TextStyle(fontSize: 14, height: 1.3),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildVideoContent() {
+    if (widget.post.mediaUrl == null || widget.post.mediaUrl!.isEmpty) {
+      return _buildTextContent();
+    }
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        CachedNetworkImage(
+          imageUrl: widget.post.mediaUrl!,
+          fit: BoxFit.cover,
+          height: 350,
+          width: double.infinity,
+          placeholder: (context, url) => Container(
+            height: 350,
+            color: Colors.black26,
+            child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+          ),
+          errorWidget: (context, url, error) => Container(
+            height: 350,
+            color: Colors.black26,
+            child: const Icon(Icons.videocam, color: Colors.white54, size: 48),
+          ),
+        ),
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.play_arrow_rounded, color: AppColors.primary, size: 36),
+        ),
+        if (widget.post.caption != null && widget.post.caption!.isNotEmpty)
+          Positioned(
+            bottom: 12,
+            left: 16,
+            right: 16,
+            child: Text(
+              widget.post.caption!,
+              style: const TextStyle(color: Colors.white, fontSize: 13, shadows: [
+                Shadow(color: Colors.black54, blurRadius: 8),
+              ]),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEventContent() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: AppColors.kineticGradient,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.event, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'EVENTO',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            widget.post.eventTitle ?? 'Evento deportivo',
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          if (widget.post.eventDate != null)
+            Row(
+              children: [
+                const Icon(Icons.calendar_today, color: Colors.white70, size: 14),
+                const SizedBox(width: 6),
+                Text(widget.post.eventDate!, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              ],
+            ),
+          if (widget.post.eventPlace != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.white70, size: 14),
+                  const SizedBox(width: 6),
+                  Text(widget.post.eventPlace!, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                ],
+              ),
+            ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Te interesa este evento')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('Me interesa', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+          if (widget.post.caption != null && widget.post.caption!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(widget.post.caption!, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultContent() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text(
+              'RESULTADO',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.post.teamA ?? 'Local',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${widget.post.scoreA ?? '?'} - ${widget.post.scoreB ?? '?'}',
+                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  widget.post.teamB ?? 'Visitante',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          if (widget.post.caption != null && widget.post.caption!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                widget.post.caption!,
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -216,23 +483,8 @@ class _FeedPostCardState extends ConsumerState<FeedPostCard> {
             ),
           ),
           
-          // Image
-          CachedNetworkImage(
-            imageUrl: widget.post.mediaUrl,
-            fit: BoxFit.cover,
-            height: 350,
-            width: double.infinity,
-            placeholder: (context, url) => Container(
-              height: 350,
-              color: AppColors.surfaceVariant,
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              height: 350,
-              color: AppColors.surfaceVariant,
-              child: const Icon(Icons.error),
-            ),
-          ),
+          // Content based on type
+          _buildPostContent(context),
           
           // Actions (Like, Comment, Share)
           Padding(

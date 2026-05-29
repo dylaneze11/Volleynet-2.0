@@ -2,26 +2,71 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /posts/{postId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.authorUid;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorUid;
-    }
-    
-    match /connection_requests/{reqId} {
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.fromUserId;
-      allow read, update: if request.auth != null && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
-    }
-    
+    // ─── Users ────────────────────────────────────────────────────────────
     match /users/{userId} {
-      // Cualquiera autenticado puede leer perfiles (para la parte social)
+      // Cualquier autenticado puede leer perfiles
       allow read: if request.auth != null;
       // Solo el propietario puede modificar sus propios datos
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+      
+      // Validación: array de following/followers solo se modifica via arrayUnion/arrayRemove
+      // No permitir sobrescribir arrays completos
+      allow write: if request.auth != null && request.auth.uid == userId
+        && (!request.resource.data.keys.hasAny(['following', 'followers'])
+            || request.writeFields.size() == 1
+            && (request.writeFields.hasOnly(['following'])
+                || request.writeFields.hasOnly(['followers']))
+           );
     }
-    
-    // Regla temporal general (no recomendada en producción) para no romper otras funciones
-    match /{document=**} {
-      allow read, write: if request.auth != null; 
+
+    // ─── Posts ────────────────────────────────────────────────────────────
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.authorUid
+        && request.resource.data.keys().hasAll(['authorUid', 'createdAt']);
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.authorUid
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['caption', 'likeCount', 'likedBy', 'commentCount']);
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.authorUid;
     }
+
+    // ─── Follows ──────────────────────────────────────────────────────────
+    match /follows/{followId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.followerId;
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.followerId;
+    }
+
+    // ─── Notifications ────────────────────────────────────────────────────
+    match /notifications/{notifId} {
+      allow read: if request.auth != null 
+        && request.auth.uid == resource.data.toUid;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.toUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+    }
+
+    // ─── Connection Requests ──────────────────────────────────────────────
+    match /connection_requests/{reqId} {
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.fromUserId;
+      allow read, update: if request.auth != null 
+        && (request.auth.uid == resource.data.fromUserId 
+            || request.auth.uid == resource.data.toUserId);
+    }
+
+    // ─── Conversations ────────────────────────────────────────────────────
+    match /conversations/{convId} {
+      allow read, write: if request.auth != null 
+        && resource.data.participantIds.hasAny([request.auth.uid]);
+    }
+  }
 }

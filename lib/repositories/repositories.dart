@@ -129,6 +129,97 @@ class UserRepository {
       'followers': FieldValue.arrayRemove([currentUid]),
       'followersCount': FieldValue.increment(-1),
     });
+    // Delete follows doc if exists
+    final followsId = '${currentUid}_${targetUid}';
+    batch.delete(_firestore.collection('follows').doc(followsId));
+    await batch.commit();
+  }
+
+  /// Get suggested users based on same location, excluding self and already followed.
+  Future<List<UserModel>> getSuggestedUsers(String currentUid, List<String> alreadyFollowing, {String? location, String? province, UserRole? role}) async {
+    final results = <UserModel>{};
+    final excludeIds = {...alreadyFollowing, currentUid};
+
+    // 1. Try by exact location (city)
+    if (location != null && location.isNotEmpty) {
+      final snap = await _firestore
+          .collection('users')
+          .where('city', isEqualTo: location)
+          .limit(20)
+          .get();
+      for (var doc in snap.docs) {
+        if (!excludeIds.contains(doc.id)) {
+          results.add(UserModel.fromFirestore(doc));
+        }
+      }
+    }
+
+    // 2. If < 5, broaden to province
+    if (results.length < 5 && province != null && province.isNotEmpty) {
+      final snap = await _firestore
+          .collection('users')
+          .where('province', isEqualTo: province)
+          .limit(30)
+          .get();
+      for (var doc in snap.docs) {
+        if (!excludeIds.contains(doc.id)) {
+          results.add(UserModel.fromFirestore(doc));
+        }
+      }
+    }
+
+    // 3. If still < 5, get recent users as fallback
+    if (results.length < 5) {
+      final snap = await _firestore
+          .collection('users')
+          .orderBy('createdAt', descending: true)
+          .limit(20)
+          .get();
+      for (var doc in snap.docs) {
+        if (!excludeIds.contains(doc.id)) {
+          results.add(UserModel.fromFirestore(doc));
+        }
+      }
+    }
+
+    // Sort: same role first, then others
+    final list = results.toList();
+    if (role != null) {
+      list.sort((a, b) {
+        if (a.role == role && b.role != role) return -1;
+        if (a.role != role && b.role == role) return 1;
+        return 0;
+      });
+    }
+
+    return list.take(20).toList();
+  }
+
+  /// Batch follow multiple users (used in onboarding)
+  Future<void> batchFollowUsers(String currentUid, List<String> targetUids) async {
+    if (targetUids.isEmpty) return;
+    final batch = _firestore.batch();
+    final currentRef = _firestore.collection('users').doc(currentUid);
+
+    batch.update(currentRef, {
+      'following': FieldValue.arrayUnion(targetUids),
+      'followingCount': FieldValue.increment(targetUids.length),
+    });
+
+    for (final targetUid in targetUids) {
+      final targetRef = _firestore.collection('users').doc(targetUid);
+      batch.update(targetRef, {
+        'followers': FieldValue.arrayUnion([currentUid]),
+        'followersCount': FieldValue.increment(1),
+      });
+      final followsId = '${currentUid}_$targetUid';
+      batch.set(_firestore.collection('follows').doc(followsId), {
+        'followerId': currentUid,
+        'followedId': targetUid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+
     await batch.commit();
   }
 }
@@ -146,10 +237,7 @@ class PostRepository {
         .limit(limit);
         
     if (following != null && following.isNotEmpty) {
-      // Firebase 'whereIn' supports up to 10 elements.
-      // If a user follows more than 10 people, we limit to the first 10 for this query
-      // or we'd need to chunk the queries (advanced). For now, this suffices.
-      final queryList = following.length > 10 ? following.sublist(0, 10) : following;
+      final queryList = following.length > 30 ? following.sublist(0, 30) : following;
       query = query.where('authorUid', whereIn: queryList);
     }
     
@@ -157,6 +245,29 @@ class PostRepository {
     return query.snapshots().map(
       (snap) => snap.docs.map((d) => PostModel.fromFirestore(d)).toList(),
     );
+  }
+
+  /// Feed query for a chunk of following IDs (max 30 per chunk).
+  Stream<List<PostModel>> getFeedPostsChunk(List<String> followingChunk, {int limit = 50}) {
+    return _firestore
+        .collection('posts')
+        .where('authorUid', whereIn: followingChunk)
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => PostModel.fromFirestore(d)).toList());
+  }
+
+  /// Paginated: fetch next page of posts from a chunk.
+  Future<List<PostModel>> getNextFeedPostsChunk(List<String> followingChunk, DocumentSnapshot lastDoc, {int limit = 20}) async {
+    final snap = await _firestore
+        .collection('posts')
+        .where('authorUid', whereIn: followingChunk)
+        .orderBy('createdAt', descending: true)
+        .startAfterDocument(lastDoc)
+        .limit(limit)
+        .get();
+    return snap.docs.map((d) => PostModel.fromFirestore(d)).toList();
   }
 
   Stream<List<PostModel>> getMarketPosts({List<String>? tags, String? position, String? city}) {

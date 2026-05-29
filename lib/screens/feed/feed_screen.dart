@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../core/theme/app_theme.dart';
+import '../../models/models.dart';
 import '../../providers/providers.dart';
 import '../../core/utils/page_reload.dart';
 import 'widgets/feed_post_card.dart';
@@ -11,7 +13,8 @@ class FeedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final feed = ref.watch(feedPostsProvider);
+    final feedState = ref.watch(feedStateProvider);
+    final currentUser = ref.watch(currentUserProvider).valueOrNull;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -25,38 +28,202 @@ class FeedScreen extends ConsumerWidget {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 24),
-              _buildHero(context),
-              const SizedBox(height: 32),
-              
-              // Título de la actividad social de los usuarios
-              Text(
-                'Actividad de atletas',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              
-              feed.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
-                data: (posts) {
-                  if (posts.isEmpty) {
-                    return _buildEmptyState(context);
-                  }
-                  return Column(
-                    children: posts.map((post) => FeedPostCard(post: post)).toList(),
-                  );
-                },
-              ),
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 24),
+                _buildHero(context),
+                const SizedBox(height: 32),
+                _buildContent(context, ref, feedState, currentUser),
+              ],
+            ),
           ),
         ),
-        ),
       ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, WidgetRef ref, AsyncValue<FeedState> feedState, dynamic currentUser) {
+    return feedState.when(
+      loading: () => _buildSkeletonLoader(),
+      error: (err, _) => _buildErrorState(context, err.toString()),
+      data: (state) {
+        switch (state.status) {
+          case FeedStatus.initializing:
+            return _buildSkeletonLoader();
+          case FeedStatus.emptyNotFollowing:
+            return _buildNotFollowingState(context);
+          case FeedStatus.emptyFollowingNoPosts:
+            return _buildEmptyPostsState(context);
+          case FeedStatus.data:
+            return _buildPostList(context, state.posts);
+          case FeedStatus.error:
+            return _buildErrorState(context, state.error ?? 'Error desconocido');
+        }
+      },
+    );
+  }
+
+  Widget _buildSkeletonLoader() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Column(
+        children: List.generate(4, (index) => Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(width: 44, height: 44, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white)),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(width: 120, height: 14, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+                      const SizedBox(height: 6),
+                      Container(width: 80, height: 12, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(width: double.infinity, height: 200, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
+              const SizedBox(height: 12),
+              Container(width: double.infinity, height: 14, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+              const SizedBox(height: 6),
+              Container(width: 160, height: 14, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+            ],
+          ),
+        )),
+      ),
+    );
+  }
+
+  Widget _buildNotFollowingState(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.secondary.withOpacity(0.15)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))
+              ]
+            ),
+            child: const Icon(Icons.people_outline, size: 48, color: AppColors.primary),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Tu feed está vacío',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Seguí a jugadores, clubes y entrenadores\npara ver su contenido aquí.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => context.push('/market'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text('Explorar personas', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () => context.go('/onboarding/suggest-follow'),
+            child: const Text(
+              'Sugerencias para seguir',
+              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyPostsState(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.secondary.withOpacity(0.15)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))
+              ]
+            ),
+            child: const Icon(Icons.history_toggle_off, size: 48, color: AppColors.secondary),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Sin novedades',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tus seguidos aún no publicaron nada.\n¡Escribiles o esperá a que compartan!',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, String error) {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+          const SizedBox(height: 16),
+          Text('Error: $error', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.error)),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => reloadPage(),
+            child: const Text('Reintentar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPostList(BuildContext context, List<PostModel> posts) {
+    return Column(
+      children: posts.map((post) => FeedPostCard(post: post)).toList(),
     );
   }
 
@@ -172,43 +339,4 @@ class FeedScreen extends ConsumerWidget {
       ),
     );
   }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.secondary.withOpacity(0.2), style: BorderStyle.none),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))
-              ]
-            ),
-            child: const Icon(Icons.history_toggle_off, size: 48, color: AppColors.secondary),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Sin actividad reciente',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Todavía no hay publicaciones destacadas.\n¡Sé el primero en compartir!',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
 }
-

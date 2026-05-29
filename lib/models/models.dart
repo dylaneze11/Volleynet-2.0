@@ -21,6 +21,7 @@ class UserModel {
   final int followingCount;
   final List<String> followers;
   final List<String> following;
+  final List<String> interests;
 
   // Player-specific
   final PlayerPosition? position;
@@ -43,6 +44,7 @@ class UserModel {
   // Club-specific
   final String? location;
   final String? city;
+  final String? province;
   final String? country;
   final String? trainingDays;
   final List<String>? federatedCategories;
@@ -61,6 +63,7 @@ class UserModel {
     this.followingCount = 0,
     this.followers = const [],
     this.following = const [],
+    this.interests = const [],
     this.position,
     this.height,
     this.handedness,
@@ -77,6 +80,7 @@ class UserModel {
     this.coachedCategories,
     this.location,
     this.city,
+    this.province,
     this.country,
     this.trainingDays,
     this.federatedCategories,
@@ -116,6 +120,7 @@ class UserModel {
       followingCount: data['followingCount'] ?? 0,
       followers: List<String>.from(data['followers'] ?? []),
       following: List<String>.from(data['following'] ?? []),
+      interests: List<String>.from(data['interests'] ?? []),
       position: _positionFromString(data['position']),
       height: (data['height'] as num?)?.toDouble(),
       handedness: data['handedness'],
@@ -134,6 +139,7 @@ class UserModel {
           : null,
       location: data['location'],
       city: data['city'],
+      province: data['province'],
       country: data['country'],
       trainingDays: data['trainingDays'],
       federatedCategories: data['federatedCategories'] != null
@@ -154,6 +160,7 @@ class UserModel {
       'followingCount': followingCount,
       'followers': followers,
       'following': following,
+      'interests': interests,
       'position': position?.name,
       'height': height,
       'handedness': handedness,
@@ -170,6 +177,7 @@ class UserModel {
       'coachedCategories': coachedCategories,
       'location': location,
       'city': city,
+      'province': province,
       'country': country,
       'trainingDays': trainingDays,
       'federatedCategories': federatedCategories,
@@ -186,6 +194,7 @@ class UserModel {
     int? followingCount,
     List<String>? followers,
     List<String>? following,
+    List<String>? interests,
     String? pronoun,
     String? gender,
     int? age,
@@ -195,6 +204,9 @@ class UserModel {
     PlayerPosition? position,
     double? height,
     String? category,
+    String? location,
+    String? city,
+    String? province,
   }) {
     return UserModel(
       uid: uid,
@@ -208,6 +220,7 @@ class UserModel {
       followingCount: followingCount ?? this.followingCount,
       followers: followers ?? this.followers,
       following: following ?? this.following,
+      interests: interests ?? this.interests,
       position: position ?? this.position,
       height: height ?? this.height,
       handedness: handedness,
@@ -222,8 +235,9 @@ class UserModel {
       certificationLevel: certificationLevel,
       yearsExperience: yearsExperience,
       coachedCategories: coachedCategories,
-      location: location,
-      city: city,
+      location: location ?? this.location,
+      city: city ?? this.city,
+      province: province ?? this.province,
       country: country,
       trainingDays: trainingDays,
       federatedCategories: federatedCategories,
@@ -253,6 +267,8 @@ class UserModel {
 
 // ─── Post Model ───────────────────────────────────────────────────────────────
 
+enum PostType { text, photo, video, event, result }
+
 enum PostTag {
   soloContenido,
   buscoClub,
@@ -266,9 +282,10 @@ class PostModel {
   final String authorName;
   final String? authorPhotoUrl;
   final String? authorRole;
-  final String mediaUrl;
+  final PostType type;
+  final String? mediaUrl;
   final Uint8List? localMediaBytes;
-  final String mediaType; // 'photo' | 'video'
+  final String? mediaType; // 'photo' | 'video'
   final String? caption;
   final List<PostTag> tags;
   final int likeCount;
@@ -277,15 +294,27 @@ class PostModel {
   final String? location;
   final DateTime createdAt;
 
+  // Event-specific
+  final String? eventTitle;
+  final String? eventDate;
+  final String? eventPlace;
+
+  // Result-specific
+  final String? teamA;
+  final String? teamB;
+  final String? scoreA;
+  final String? scoreB;
+
   const PostModel({
     required this.id,
     required this.authorUid,
     required this.authorName,
     this.authorPhotoUrl,
     this.authorRole,
-    required this.mediaUrl,
+    this.type = PostType.photo,
+    this.mediaUrl,
     this.localMediaBytes,
-    this.mediaType = 'photo',
+    this.mediaType,
     this.caption,
     this.tags = const [],
     this.likeCount = 0,
@@ -293,7 +322,24 @@ class PostModel {
     this.likedBy = const [],
     this.location,
     required this.createdAt,
+    this.eventTitle,
+    this.eventDate,
+    this.eventPlace,
+    this.teamA,
+    this.teamB,
+    this.scoreA,
+    this.scoreB,
   });
+
+  static PostType _typeFromString(String s) {
+    switch (s) {
+      case 'text': return PostType.text;
+      case 'video': return PostType.video;
+      case 'event': return PostType.event;
+      case 'result': return PostType.result;
+      default: return PostType.photo;
+    }
+  }
 
   static PostTag _tagFromString(String s) {
     switch (s) {
@@ -312,8 +358,9 @@ class PostModel {
       authorName: data['authorName'] ?? '',
       authorPhotoUrl: data['authorPhotoUrl'],
       authorRole: data['authorRole'],
-      mediaUrl: data['mediaUrl'] ?? '',
-      mediaType: data['mediaType'] ?? 'photo',
+      type: _typeFromString(data['type'] ?? 'photo'),
+      mediaUrl: data['mediaUrl'],
+      mediaType: data['mediaType'],
       caption: data['caption'],
       tags: (data['tags'] as List<dynamic>? ?? [])
           .map((t) => _tagFromString(t as String))
@@ -323,6 +370,13 @@ class PostModel {
       likedBy: List<String>.from(data['likedBy'] ?? []),
       location: data['location'],
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      eventTitle: data['eventTitle'],
+      eventDate: data['eventDate'],
+      eventPlace: data['eventPlace'],
+      teamA: data['teamA'],
+      teamB: data['teamB'],
+      scoreA: data['scoreA'],
+      scoreB: data['scoreB'],
     );
   }
 
@@ -332,6 +386,7 @@ class PostModel {
       'authorName': authorName,
       'authorPhotoUrl': authorPhotoUrl,
       'authorRole': authorRole,
+      'type': type.name,
       'mediaUrl': mediaUrl,
       'mediaType': mediaType,
       'caption': caption,
@@ -340,6 +395,13 @@ class PostModel {
       'commentCount': commentCount,
       'likedBy': likedBy,
       'location': location,
+      'eventTitle': eventTitle,
+      'eventDate': eventDate,
+      'eventPlace': eventPlace,
+      'teamA': teamA,
+      'teamB': teamB,
+      'scoreA': scoreA,
+      'scoreB': scoreB,
       'createdAt': FieldValue.serverTimestamp(),
     };
   }
@@ -353,6 +415,7 @@ class PostModel {
       authorName: authorName,
       authorPhotoUrl: authorPhotoUrl,
       authorRole: authorRole,
+      type: type,
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       caption: caption,
@@ -362,6 +425,13 @@ class PostModel {
       likedBy: likedBy ?? this.likedBy,
       location: location,
       createdAt: createdAt,
+      eventTitle: eventTitle,
+      eventDate: eventDate,
+      eventPlace: eventPlace,
+      teamA: teamA,
+      teamB: teamB,
+      scoreA: scoreA,
+      scoreB: scoreB,
     );
   }
 }
